@@ -1,0 +1,22 @@
+{
+  "name": "TradePlan",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
+    "@prisma/client": "^7.2.0",
+    "nuxt": "^4.2.2",
+    "vue": "^3.5.27",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "prisma": "^7.2.0"
+  }
+}
