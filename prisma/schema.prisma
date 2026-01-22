@@ -7,25 +7,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Trader {
+  id            String       @id @default(uuid())
+  firstName     String       @map("first_name")
+  lastName      String       @map("last_name")
+  phone         String?
+  username      String       @unique
+  email         String       @unique
+  passwordHash  String       @map("password_hash")
+  
+  // Nível de acesso: 1=Trader, 5=Master, 10=Admin
+  roleLevel     Int          @default(1) @map("role_level")
+  isActive      Boolean      @default(true) @map("is_active")
+  
+  // Relacionamento: Um trader tem muitos dias de trading
+  tradingDays   TradingDay[]
+
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  @@map("traders")
+}
+
 model TradingDay {
-  id           Int       @id @default(autoincrement())
-  linha        Int       @unique
-  capital      Float
-  metaLiq      Float
-  contratos    Int
-  ptsPorOp     Int
-  opsPorDia    Int
-  totalPts     Int
-  lucroLiq     Float
-  gainDiario   Float
-  incTotal     Float
-  totalAcum    Float
-  completado   Boolean   @default(false)
-  dataExecucao DateTime?
-  observacoes  String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  sentimento   String?  // "Calmo", "Ansioso", "Eufórico"
-  erroComum    String?  // "Nenhum", "Overtrading", "Stop Longo", etc
-  notas        String?  @db.Text
+  id            Int       @id @default(autoincrement())
+  linha         Int       
+  capital       Float     // Capital com que o trader iniciou o dia
+  lucroLiq      Float     @default(0) // O que ele REALMENTE fez (pode ser diferente da meta)
+  completado    Boolean   @default(false)
+  
+  sentimento    String?   
+  notas         String?   @db.Text
+  
+  traderId      String    @map("trader_id")
+  trader        Trader    @relation(fields: [traderId], references: [id])
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([traderId, linha])
+  @@map("trading_days")
 }
