@@ -69,7 +69,6 @@
   .recorde-valor { color: #ffd700; font-weight: bold; font-family: monospace; font-size: 15px; }
   .btn-reset-recorde { background: none; border: none; color: #ff3b30; font-size: 11px; cursor: pointer; text-transform: uppercase; font-weight: 600; padding: 2px 5px; }
 
-  /* HUD DA ESCALA ATIVA */
   .hud-escala-ativa {
     width: 100%;
     max-width: 550px;
@@ -111,9 +110,7 @@
   .traste-branco { position: absolute; right: -2px; color: #ffffff; z-index: 1; pointer-events: none; }
   .pestana-destacada { position: absolute; right: -3px; color: #ffd700; font-size: 14px; font-weight: 900; z-index: 2; pointer-events: none; }
   
-  .regiao-azul { color: #0a84ff; background-color: rgba(10,132,255,0.25); border-radius: 4px; padding: 2px 0px; font-weight: 900; }
-  .regiao-verde { color: #30d158; background-color: rgba(48,209,88,0.25); border-radius: 4px; padding: 2px 0px; font-weight: 900; }
-  .regiao-vermelho { color: #ff3b30; background-color: rgba(255,59,48,0.25); border-radius: 4px; padding: 2px 0px; font-weight: 900; }
+  .shape-ativo-visual { color: #0a84ff; background-color: rgba(10,132,255,0.25); border-radius: 4px; padding: 2px 0px; font-weight: 900; }
   
   .feedback-sucesso { color: #ffffff; background-color: #34c759; border-radius: 4px; padding: 2px 2px; font-weight: 900; }
   .feedback-erro { color: #ffffff; background-color: #ff3b30; border-radius: 4px; padding: 2px 2px; font-weight: 900; }
@@ -131,7 +128,7 @@
   <div class="painel-controles">
     
     <div class="painel-recorde">
-      <div>🏆 Recorde (<span id="txt-contexto-recorde">C Fixa - Azul</span>):</div>
+      <div>🏆 Recorde (<span id="txt-contexto-recorde">CAGED Ativo</span>):</div>
       <div>
         <span class="recorde-valor" id="val-recorde">000 BPM</span>
         <button class="btn-reset-recorde" onclick="limparRecordeAtual()">Zerar</button>
@@ -157,18 +154,20 @@
         <input type="text" id="input-projecao" value="1, 3, 4, 5" placeholder="Ex: 1, 3, 4, 5" onchange="resetarExercicio()">
       </div>
       <div class="coluna" style="flex: 1.5;">
-        <label>Região</label>
+        <label>Região (Formato CAGED)</label>
         <select id="seletor-regiao" onchange="resetarExercicio()">
-          <option value="azul">Casas 0 a 5 (Azul)</option>
-          <option value="verde">Casas 6 a 11 (Verde)</option>
-          <option value="vermelho">Casas 12 a 15 (Vermelho)</option>
+          <option value="C">Região 1 (Shape de C)</option>
+          <option value="A">Região 2 (Shape de A)</option>
+          <option value="G">Região 3 (Shape de G)</option>
+          <option value="E">Região 4 (Shape de E)</option>
+          <option value="D" selected>Região 5 (Shape de D) 📸</option>
         </select>
       </div>
     </div>
 
     <div class="linha-controle">
       <div class="coluna" style="flex: 1.3;">
-        <label>Direção</label>
+        <label>Direção do Fluxo</label>
         <select id="seletor-direcao" onchange="resetarExercicio()">
           <option value="ambos">Subir e Descer ⇅</option>
           <option value="subir">Apenas Subir ➔</option>
@@ -186,8 +185,8 @@
       <div class="coluna" style="flex: 1.3; min-width: 110px;" id="wrapper-modo-entrada">
         <label>Captura / Entrada</label>
         <select id="seletor-entrada" onchange="alternarOrigemEntrada()">
-          <option value="tela"> Tela 📱</option>
-          <option value="guitarra">Guitarra 🎸</option>
+          <option value="tela">Pela Tela 📱</option>
+          <option value="guitarra">Guitarra Real 🎸</option>
         </select>
       </div>
     </div>
@@ -196,8 +195,8 @@
       <div class="coluna" style="flex: 1.2; min-width: 100px;">
         <label>Áudio / Som</label>
         <select id="seletor-audio">
-          <option value="notas">Notas 🎵</option>
-          <option value="metronomo">Metrônomo ⏱️</option>
+          <option value="notas">Tocar Notas 🎵</option>
+          <option value="metronomo">Metrônomo Clássico ⏱️</option>
         </select>
       </div>
       <div class="coluna" style="flex: 1.2; min-width: 100px;">
@@ -212,8 +211,8 @@
       <div class="coluna" style="flex: 1.2; min-width: 100px;">
         <label>Visualização</label>
         <select id="seletor-modo-visao" onchange="formatarBracoVisualAtual()">
-          <option value="notas">Notas</option>
-          <option value="intervalos">Intervalos</option>
+          <option value="notas">Exibir Notas</option>
+          <option value="intervalos">Exibir Intervalos</option>
         </select>
       </div>
     </div>
@@ -223,8 +222,8 @@
         <label>Padrão (A, V)</label>
         <div class="grupo-inline">
           <input type="number" id="input-avanca" class="input-padrao-av" min="1" max="12" value="3" onchange="resetarExercicio()">
-          <span> </span>
-          <input type="number" id="input-volta" class="input-padrao-av" min="0" max="6" value="0" onchange="resetarExercicio()">
+          <span>,</span>
+          <input type="number" id="input-volta" class="input-padrao-av" min="0" max="6" value="1" onchange="resetarExercicio()">
         </div>
       </div>
       <div class="coluna" style="flex: 0.7; min-width: 65px;" id="wrapper-bpm">
@@ -278,36 +277,56 @@
 
   <script>
     const mapaBraco = {
-      Ea: ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G"],
-      B:  ["B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D"],
-      G:  ["G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#"],
-      D:  ["D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F"],
-      A:  ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C"],
-      Eg: ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G"]
+      Ea: ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C"],
+      B:  ["B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G"],
+      G:  ["G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#"],
+      D:  ["D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#"],
+      A:  ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F"],
+      Eg: ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C"]
     };
 
     const frequenciasBraco = {
-      Eg: [82.41, 87.31, 92.50, 98.00, 103.83, 110.00, 116.54, 123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61, 185.00, 196.00],
-      A:  [110.00, 116.54, 123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61, 185.00, 196.00, 207.65, 220.00, 233.08, 246.94, 261.63],
-      D:  [146.83, 155.56, 164.81, 174.61, 185.00, 196.00, 207.65, 220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23],
-      G:  [196.00, 207.65, 220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16],
-      B:  [246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88, 523.25, 554.37, 587.33],
-      Ea: [329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99]
+      Eg: [82.41, 87.31, 92.50, 98.00, 103.83, 110.00, 116.54, 123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61, 185.00, 196.00, 207.65, 220.00, 233.08, 246.94, 261.63],
+      A:  [110.00, 116.54, 123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61, 185.00, 196.00, 207.65, 220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23],
+      D:  [146.83, 155.56, 164.81, 174.61, 185.00, 196.00, 207.65, 220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16],
+      G:  [196.00, 207.65, 220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25],
+      B:  [246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99],
+      Ea: [329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99, 830.61, 880.00, 932.33, 987.77, 1046.50]
     };
 
     const notasValidas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    const intervalosPentaMaior = [0, 2, 4, 7, 9];
-    const intervalosPentaMenor = [0, 3, 5, 7, 10];
     const cordasOrdem = ["Ea", "B", "G", "D", "A", "Eg"];
 
+    // MATRIZ GEOMÉTRICA DE SHAPES CAGED (PENTATÔNICA MAIOR)
+    // Valores representam deslocamentos (casas) em relação à Tônica na 6ª corda (ou oitava correspondente)
+    const templatesCAGEDMaior = {
+      "C": [ {c:"Eg", m:[0,3]}, {c:"A", m:[0,2]}, {c:"D", m:[0,2]}, {c:"G", m:[0,2]}, {c:"B", m:[1,3]}, {c:"Ea", m:[0,3]} ],
+      "A": [ {c:"Eg", m:[0,2]}, {c:"A", m:[0,2]}, {c:"D", m:[0,2]}, {c:"G", m:[0,3]}, {c:"B", m:[0,3]}, {c:"Ea", m:[0,2]} ],
+      "G": [ {c:"Eg", m:[0,2]}, {c:"A", m:[0,3]}, {c:"D", m:[0,3]}, {c:"G", m:[0,2]}, {c:"B", m:[0,2]}, {c:"Ea", m:[0,2]} ],
+      "E": [ {c:"Eg", m:[0,3]}, {c:"A", m:[0,3]}, {c:"D", m:[0,2]}, {c:"G", m:[0,2]}, {c:"B", m:[0,3]}, {c:"Ea", m:[0,3]} ],
+      "D": [ {c:"Eg", m:[1,3]}, {c:"A", m:[0,3]}, {c:"D", m:[0,3]}, {c:"G", m:[0,2]}, {c:"B", m:[1,3]}, {c:"Ea", m:[1,3]} ] // O da sua foto!
+    };
+
+    // PENTATÔNICA MENOR (Para equivalência de transição e harmonização menor)
+    const templatesCAGEDMenor = {
+      "E": [ {c:"Eg", m:[0,3]}, {c:"A", m:[0,2]}, {c:"D", m:[0,2]}, {c:"G", m:[0,2]}, {c:"B", m:[0,3]}, {c:"Ea", m:[0,3]} ],
+      "D": [ {c:"Eg", m:[0,2]}, {c:"A", m:[0,2]}, {c:"D", m:[0,3]}, {c:"G", m:[0,3]}, {c:"B", m:[0,2]}, {c:"Ea", m:[0,2]} ],
+      "C": [ {c:"Eg", m:[0,2]}, {c:"A", m:[0,3]}, {c:"D", m:[0,3]}, {c:"G", m:[0,2]}, {c:"B", m:[1,3]}, {c:"Ea", m:[0,2]} ],
+      "A": [ {c:"Eg", m:[0,3]}, {c:"A", m:[0,3]}, {c:"D", m:[0,2]}, {c:"G", m:[0,2]}, {c:"B", m:[1,3]}, {c:"Ea", m:[0,3]} ],
+      "G": [ {c:"Eg", m:[1,3]}, {c:"A", m:[0,2]}, {c:"D", m:[0,2]}, {c:"G", m:[1,3]}, {c:"B", m:[1,3]}, {c:"Ea", m:[1,3]} ]
+    };
+
+    // Posições base recomendadas para cada shape no tom de C Maior para evitar que o desenho saia do braço
+    const offsetsCagedBaseC = { "C": 0, "A": 2, "G": 4, "E": 5, "D": 7 };
+
     const mapeamentoGrausCampoHarmonico = {
-      1: { tipo: "maior", semitons: 0, label: "I" },
-      2: { tipo: "menor", semitons: 2, label: "II" },
-      3: { tipo: "menor", semitons: 4, label: "III" },
-      4: { tipo: "maior", semitons: 5, label: "IV" },
-      5: { tipo: "maior", semitons: 7, label: "V" },
-      6: { tipo: "menor", semitons: 9, label: "VI" },
-      7: { tipo: "menor", semitons: 11, label: "VII" }
+      1: { tipo: "maior", semitons: 0, label: "I", shapeSugerido: "D" },
+      2: { tipo: "menor", semitons: 2, label: "II", shapeSugerido: "E" },
+      3: { tipo: "menor", semitons: 4, label: "III", shapeSugerido: "E" },
+      4: { tipo: "maior", semitons: 5, label: "IV", shapeSugerido: "C" },
+      5: { tipo: "maior", semitons: 7, label: "V", shapeSugerido: "C" },
+      6: { tipo: "menor", semitons: 9, label: "VI", shapeSugerido: "A" },
+      7: { tipo: "menor", semitons: 11, label: "VII", shapeSugerido: "A" }
     };
 
     const frequenciasNotasAcordeBase = {
@@ -322,7 +341,7 @@
     let audioCtx = null, isPlaying = false, isVisualActive = false, bpm = 100, timerId = null, nextNoteTime = 0.0;
     let notasPentaAtivasGlobais = [], sequenciaExerc = [], passoAtual = 0, ultimaCoordenadaAtiva = null;
     let tempoRestanteSegundos = 0, tempoTotalConfigurado = 0, intervaloTimerId = null;
-    let pulsoNoCompasso = 0; // Rastreador de tempos para sincronizar o acompanhamento harmônico
+    let pulsoNoCompasso = 0;
 
     let modoAtualJogo = "treino"; 
     let ditadoTamanhoFraseAtual = 3; 
@@ -333,15 +352,10 @@
 
     let modoEstrutura = "fixa";
     let listaEscalasProjecao = []; 
+    let coordenadasDoShapeAtual = []; // Guarda as casas físicas exatas do shape selecionado
 
     let streamMicrofone = null; let analyserNode = null; let buflen = 2048; let buf = new Float32Array(buflen);
     let loopPitchId = null; let ultimaNotaDetectadaEstavel = ""; let contadorEstabilidadeNota = 0; let timestampUltimaValidacaoReal = 0;
-
-    function obterNotasPentaEspecifica(tonica, tipo) {
-      let idx = notasValidas.indexOf(tonica);
-      let intervalos = (tipo === "maior") ? intervalosPentaMaior : intervalosPentaMenor;
-      return intervalos.map(i => notasValidas[(idx + i) % 12]);
-    }
 
     function alternarModoEstrutural() {
       modoEstrutura = document.getElementById('seletor-modo-estrutura').value;
@@ -358,6 +372,38 @@
       resetarExercicio();
     }
 
+    // GERA A ROTA ESTRETA DO SHAPE CAGED (2 Notas por corda sem duplicar ou vazar)
+    function construirRotaTrilhaCAGED(tonica, tipoEscala, shapeCaged) {
+      let trilha = [];
+      let idxTonica = notasValidas.indexOf(tonica);
+      let idxC = notasValidas.indexOf("C");
+      let distDeC = (idxTonica - idxC + 12) % 12;
+
+      // Calcula a casa inicial (offset) para o shape não se perder no braço
+      let casaBase = (offsetsCagedBaseC[shapeCaged] || 0) + distDeC;
+      if (casaBase < 0) casaBase += 12;
+      if (casaBase > 10) casaBase -= 12; // Mantém confortável no braço
+
+      const template = (tipoEscala === "maior") ? templatesCAGEDMaior[shapeCaged] : templatesCAGEDMenor[shapeCaged];
+      if (!template) return [];
+
+      // Monta as coordenadas estritas corda por corda de forma linear (Grave para Agudo)
+      const ordemGraveAgudo = ["Eg", "A", "D", "G", "B", "Ea"];
+      ordemGraveAgudo.forEach(cordaId => {
+        let regraCorda = template.find(r => r.c === cordaId);
+        if (regraCorda) {
+          regraCorda.m.forEach(addCasa => {
+            let casaFinal = casaBase + addCasa;
+            if (casaFinal >= 0 && casaFinal <= 20) {
+              let notaNome = mapaBraco[cordaId][casaFinal];
+              trilha.push({ corda: cordaId, casa: casaFinal, nota: notaNome });
+            }
+          });
+        }
+      });
+      return trilha;
+    }
+
     function calcularEscalasDaProjecao() {
       const tomMae = document.getElementById('seletor-nota').value;
       const textoProjecao = document.getElementById('input-projecao').value;
@@ -372,8 +418,8 @@
         return {
           tonica: notaCorta,
           tipo: conf.tipo,
-          label: `${conf.label} (${notaCorta}${conf.tipo === 'menor' ? 'm' : ''})`,
-          notas: obterNotasPentaEspecifica(notaCorta, conf.tipo)
+          shape: conf.shapeSugerido, // Ajusta o shape para manter a mão na mesma região física
+          label: `${conf.label} (${notaCorta}${conf.tipo === 'menor' ? 'm' : ''})`
         };
       });
     }
@@ -383,43 +429,18 @@
       if (modoVisao === 'notas') {
         return notaAlvo.length === 1 ? notaAlvo + " " : notaAlvo;
       } else {
-        let tonicaReferencia = notasPentaAtivasGlobais[0] || "C";
+        let tonicaReferencia = document.getElementById('seletor-nota').value;
         let idxT = notasValidas.indexOf(tonicaReferencia);
         let idxN = notasValidas.indexOf(notaAlvo);
         let dist = (idxN - idxT + 12) % 12;
         
-        if (modoEstrutura === "caminhada" && listaEscalasProjecao[0]?.tipo === "maior") {
-          const mInt = { 0: "T ", 2: "2 ", 4: "3 ", 7: "5 ", 9: "6 " };
-          return mInt[dist] || "..";
-        } else {
-          const mInt = { 0: "T ", 3: "b3", 5: "4 ", 7: "5 ", 10: "b7" };
-          return mInt[dist] || "..";
-        }
+        const mInt = { 0: "T ", 2: "2 ", 3: "b3", 4: "3 ", 5: "4 ", 7: "5 ", 9: "6 ", 10: "b7" };
+        return mInt[dist] || "..";
       }
     }
 
     function formatarBracoVisualAtual() {
       formatarBraco(ultimaCoordenadaAtiva);
-    }
-
-    function construirTrilhaRegiaoBase(arrayFiltroNotas) {
-      let trilha = [];
-      const regiao = document.getElementById('seletor-regiao').value;
-      const cordasGraveParaAgudo = ["Eg", "A", "D", "G", "B", "Ea"]; 
-      
-      let casaMin = 0, casaMax = 5;
-      if (regiao === "verde") { casaMin = 6; casaMax = 11; }
-      else if (regiao === "vermelho") { casaMin = 12; casaMax = 15; }
-
-      cordasGraveParaAgudo.forEach(corda => {
-        for (let casa = casaMin; casa <= casaMax; casa++) {
-          let notaCasa = mapaBraco[corda][casa];
-          if (arrayFiltroNotas.includes(notaCasa)) {
-            trilha.push({ corda: corda, casa: casa, nota: notaCasa });
-          }
-        }
-      });
-      return trilha;
     }
 
     function calcularSequenciaPadrao(baseTrilha) {
@@ -444,55 +465,48 @@
     }
 
     function gerarSequenciaExercicio() {
-      let tonicaPadrao = document.getElementById('seletor-nota').value;
+      let tonicaTarget = document.getElementById('seletor-nota').value;
+      let shapeSelecionado = document.getElementById('seletor-regiao').value;
+
       if (modoEstrutura === "fixa") {
-        let base = construirTrilhaRegiaoBase(notasPentaAtivasGlobais);
-        if (base.length === 0) return [];
-        let subida = calcularSequenciaPadrao(base);
+        // Pentatônica Fixa baseada estritamente no Shape Escolhido
+        let rotaEstrita = construirRotaTrilhaCAGED(tonicaTarget, "maior", shapeSelecionado);
+        coordenadasDoShapeAtual = [...rotaEstrita]; // Salva para exibição visual estrita do desenho
+        
+        if (rotaEstrita.length === 0) return [];
+        let subida = calcularSequenciaPadrao(rotaEstrita);
         let seqFinal = processarDirecaoFluxo(subida);
         
         return seqFinal.map(passo => ({
           ...passo,
-          escalaPertencente: notasPentaAtivasGlobais,
-          labelEscala: `${tonicaPadrao}m (Fixa)`,
-          tonicaAcorde: tonicaPadrao
+          coordenadasValidasDoShape: rotaEstrita,
+          labelEscala: `${tonicaTarget} Maior (Shape de ${shapeSelecionado})`,
+          tonicaAcorde: tonicaTarget
         }));
       } else {
+        // Caminhada Harmônica inteligente mantendo o foco no mesmo setor do braço
         calcularEscalasDaProjecao();
-        
-        let todasNotasConjunto = [];
-        listaEscalasProjecao.forEach(esc => todasNotasConjunto.push(...esc.notas));
-        todasNotasConjunto = [...new Set(todasNotasConjunto)];
+        let sequenciaCompletaCaminhada = [];
 
-        let rotaFisicaCompletaBase = construirTrilhaRegiaoBase(todasNotasConjunto);
-        let subidaEstruturadaGuia = calcularSequenciaPadrao(rotaFisicaCompletaBase);
-        let sequenciaFinalDirecao = processarDirecaoFluxo(subidaEstruturadaGuia);
-
-        let totalNotas = sequenciaFinalDirecao.length;
-        let numEscalas = listaEscalasProjecao.length;
-        let tamanhoBloco = Math.max(1, Math.floor(totalNotas / numEscalas));
-
-        let sequenciaHarmonicaResultante = sequenciaFinalDirecao.map((passo, indice) => {
-          let idxEscala = Math.floor(indice / tamanhoBloco);
-          if (idxEscala >= numEscalas) idxEscala = numEscalas - 1;
-          
-          let escalaDoBloco = listaEscalasProjecao[idxEscala];
-          let notaAjustada = passo.nota;
-          if (!escalaDoBloco.notas.includes(notaAjustada)) {
-            notaAjustada = escalaDoBloco.notas[0]; 
+        listaEscalasProjecao.forEach(esc => {
+          let rotaDoBloco = construirRotaTrilhaCAGED(esc.tonica, esc.tipo, esc.shape);
+          if(rotaDoBloco.length > 0) {
+            let subidaBloco = calcularSequenciaPadrao(rotaDoBloco);
+            let fluxoBloco = processarDirecaoFluxo(subidaBloco);
+            
+            let blocoMapeado = fluxoBloco.map(passo => ({
+              ...passo,
+              coordenadasValidasDoShape: rotaDoBloco,
+              labelEscala: `${esc.label} [Shape: ${esc.shape}]`,
+              tonicaAcorde: esc.tonica
+            }));
+            sequenciaCompletaCaminhada.push(...blocoMapeado);
           }
-
-          return {
-            corda: passo.corda,
-            casa: passo.casa,
-            nota: notaAjustada,
-            escalaPertencente: escalaDoBloco.notas,
-            labelEscala: escalaDoBloco.label,
-            tonicaAcorde: escalaDoBloco.tonica
-          };
         });
 
-        return sequenciaHarmonicaResultante;
+        // Configura o shape inicial para renderização visual estrita
+        coordenadasDoShapeAtual = construirRotaTrilhaCAGED(listaEscalasProjecao[0].tonica, listaEscalasProjecao[0].tipo, listaEscalasProjecao[0].shape);
+        return sequenciaCompletaCaminhada;
       }
     }
 
@@ -516,31 +530,33 @@
       ultimaCoordenadaAtiva = coordenadaAtiva;
       const labels = { Ea: "E_a", B: "B  ", G: "G  ", D: "D  ", A: "A  ", Eg: "E_g" };
       
-      let escValidaMomento = (coordenadaAtiva && coordenadaAtiva.escalaPertencente) 
-                             ? coordenadaAtiva.escalaPertencente 
-                             : notasPentaAtivasGlobais;
+      // Define quais casas físicas pertencem ao desenho ativo neste exato momento do ciclo
+      let referenciasFisicasExibicao = (coordenadaAtiva && coordenadaAtiva.coordenadasValidasDoShape) 
+                                       ? coordenadaAtiva.coordenadasValidasDoShape 
+                                       : coordenadasDoShapeAtual;
 
       let tableHtml = `<table class="fretboard-table"><thead><tr><th class="label-corda"></th>`;
-      for (let casa = 0; casa <= 15; casa++) tableHtml += `<th>${casa}</th>`;
+      for (let casa = 0; casa <= 20; casa++) tableHtml += `<th>${casa}</th>`;
       tableHtml += `</tr></thead><tbody>`;
 
       cordasOrdem.forEach(corda => {
         tableHtml += `<tr><td class="label-corda">${labels[corda]}</td>`;
-        for (let casa = 0; casa <= 15; casa++) {
+        for (let casa = 0; casa <= 20; casa++) {
           const nota = mapaBraco[corda][casa];
-          const estaNaEscala = escValidaMomento.includes(nota);
+          
+          // Verifica se essa coordenada específica (corda e casa) faz parte da fôrma anatômica
+          const estaNoDesenhoDoShape = referenciasFisicasExibicao.some(r => r.corda === corda && r.casa === casa);
           
           const eANotaTocandoTecnico = (modoAtualJogo === "treino" && coordenadaAtiva && coordenadaAtiva.corda === corda && coordenadaAtiva.casa === casa);
           const eANotaFeedbackDitado = (modoAtualJogo === "ditado" && ditadoNotaFeedbackFisico && ditadoNotaFeedbackFisico.corda === corda && ditadoNotaFeedbackFisico.casa === casa);
           
-          if (estaNaEscala) {
+          if (estaNoDesenhoDoShape) {
             let label = obterNomeExibicaoNota(nota);
             let clickAttr = `onclick="processarCliqueUsuarioDitado('${corda}', ${casa})"`;
             tableHtml += `<td class="casa-penta-clicavel" ${clickAttr}>`;
             
             if (eANotaTocandoTecnico) {
-              let cor = casa <= 5 ? "regiao-azul" : (casa <= 11 ? "regiao-verde" : "regiao-vermelho");
-              tableHtml += `<span class="${cor}">[${label}]</span>`;
+              tableHtml += `<span class="shape-ativo-visual">[${label}]</span>`;
             } else if (eANotaFeedbackDitado) {
               let classeFeedback = ditadoStatusVisualNota === "sucesso" ? "feedback-sucesso" : "feedback-erro";
               tableHtml += `<span class="${classeFeedback}">[${label}]</span>`;
@@ -554,7 +570,7 @@
           } else {
             tableHtml += `<td><span class="line-vazio">══════</span>`;
           }
-          if (casa < 15) tableHtml += (casa === 0) ? `<span class="pestana-destacada">║</span>` : `<span class="traste-branco">╪</span>`;
+          if (casa < 20) tableHtml += (casa === 0) ? `<span class="pestana-destacada">║</span>` : `<span class="traste-branco">╪</span>`;
           tableHtml += `</td>`;
         }
         tableHtml += `</tr>`;
@@ -564,14 +580,13 @@
     }
 
     function resetarExercicio() {
-      let notaTonica = document.getElementById('seletor-nota').value;
-      
+      let tonicaPadrao = document.getElementById('seletor-nota').value;
+      let shapeConfig = document.getElementById('seletor-regiao').value;
+
       if (modoEstrutura === "fixa") {
-        notasPentaAtivasGlobais = obterNotasPentaEspecifica(notaTonica, "menor");
-        document.getElementById('hud-escala-display').innerText = `ESCALA ATUAL: PENTATÔNICA DE ${notaTonica} MENOR`;
+        document.getElementById('hud-escala-display').innerText = `ESCALA ATUAL: PENTATÔNICA DE ${tonicaPadrao} MAIOR [Shape: ${shapeConfig}]`;
       } else {
         calcularEscalasDaProjecao();
-        notasPentaAtivasGlobais = listaEscalasProjecao[0]?.notas || [];
         document.getElementById('hud-escala-display').innerText = `🪜 CAMINHADA INICIAL: ${listaEscalasProjecao[0]?.label || ''}`;
       }
 
@@ -589,7 +604,6 @@
         let modoAudio = elementoAudio ? elementoAudio.value : 'notas';
         let notaAlvo = sequenciaExerc[passoAtual];
         
-        // REGRA DE ACOMPANHAMENTO: Dispara no Início (Tempo 0) e na Metade (Tempo 2) de um compasso de 4 tempos
         let volumeFundo = parseFloat(document.getElementById('seletor-fundo-harmonico').value) || 0;
         if (volumeFundo > 0 && notaAlvo) {
           if (pulsoNoCompasso === 0 || pulsoNoCompasso === 2) {
@@ -608,8 +622,8 @@
           if (!isPlaying) return;
           
           if (notaAlvo?.labelEscala) {
-            let infoFundo = volumeFundo > 0 ? ` 🎸 [Fundo: Acorde ${notaAlvo.tonicaAcorde}]` : '';
-            document.getElementById('hud-escala-display').innerText = `${modoEstrutura === 'caminhada' ? '🪜' : '🔒'} ESCALA ATIVA: ${notaAlvo.labelEscala}${infoFundo}`;
+            let infoFundo = volumeFundo > 0 ? ` 🎸 [Acompanhamento: ${notaAlvo.tonicaAcorde}]` : '';
+            document.getElementById('hud-escala-display').innerText = `${modoEstrutura === 'caminhada' ? '🪜' : '🔒'} ${notaAlvo.labelEscala}${infoFundo}`;
           }
           
           formatarBraco(notaAlvo);
@@ -618,7 +632,7 @@
 
         nextNoteTime += 60.0 / bpm;
         passoAtual++;
-        pulsoNoCompasso = (pulsoNoCompasso + 1) % 4; // Rotaciona ciclicamente: 0, 1, 2, 3 (Compasso 4/4)
+        pulsoNoCompasso = (pulsoNoCompasso + 1) % 4;
         
         if (passoAtual >= sequenciaExerc.length) {
           passoAtual = 0;
@@ -635,22 +649,12 @@
 
     function processarNotaFisicaDetectada(notaTocada) {
       if (modoAtualJogo !== "ditado") return;
-      let regiao = document.getElementById('seletor-regiao').value;
-      let casaMin = 0, casaMax = 5;
-      if (regiao === "verde") { casaMin = 6; casaMax = 11; }
-      else if (regiao === "vermelho") { casaMin = 12; casaMax = 15; }
+      
+      let referenciasFisicasDitado = (sequenciaExerc[ditadoIndiceResposta]?.coordenadasValidasDoShape)
+                                     ? sequenciaExerc[ditadoIndiceResposta].coordenadasValidasDoShape 
+                                     : coordenadasDoShapeAtual;
 
-      let escAlvoFiltro = (sequenciaExerc[ditadoIndiceResposta]?.escalaPertencente)
-                          ? sequenciaExerc[ditadoIndiceResposta].escalaPertencente : notasPentaAtivasGlobais;
-
-      let coordenadasValidas = [];
-      cordasOrdem.forEach(corda => {
-        for (let casa = casaMin; casa <= casaMax; casa++) {
-          if (mapaBraco[corda][casa] === notaTocada && escAlvoFiltro.includes(notaTocada)) {
-            coordenadasValidas.push({ corda: corda, casa: casa });
-          }
-        }
-      });
+      let coordenadasValidas = referenciasFisicasDitado.filter(r => r.nota === notaTocada);
       if (coordenadasValidas.length === 0) return;
       let feedbackCoord = coordenadasValidas[0];
 
@@ -722,7 +726,7 @@
         tocarNotaGuitarra(frequenciasBraco[notaAlvo.corda][notaAlvo.casa], momentoExato);
         setTimeout(() => {
           if (notaAlvo?.labelEscala) {
-            document.getElementById('hud-escala-display').innerText = `🎧 FRASE: PENTATÔNICA DE ${notaAlvo.labelEscala}`;
+            document.getElementById('hud-escala-display').innerText = `🎧 FRASE: ${notaAlvo.labelEscala}`;
           }
           formatarBraco(notaAlvo);
         }, (momentoExato - audioCtx.currentTime) * 1000);
@@ -734,7 +738,7 @@
     function entrarModoValendo() {
       if(sequenciaExerc.length === 0) return;
       ditadoValendoAtivo = true; ditadoIndiceResposta = 0; formatarBraco(null);
-      document.getElementById('painel-ditado-msg').innerText = `🔥 SEQUÊNCIA OCULTADA! Toque as ${ditadoTamanhoFraseAtual} notas corretas!`;
+      document.getElementById('painel-ditado-msg').innerText = `🔥 SEQUÊNCIA OCULTADA! Toque as ${ditadoTamanhoFraseAtual} notas corretas no braço!`;
       document.getElementById('painel-ditado-msg').style.borderLeftColor = "#bf5af2";
     }
 
@@ -746,7 +750,7 @@
 
     function bloquearBotoesDitado() { document.getElementById('btn-ditado-ouvir').disabled = true; document.getElementById('btn-ditado-validar').disabled = true; }
     function desbloquearBotoesDitado() { document.getElementById('btn-ditado-ouvir').disabled = false; document.getElementById('btn-ditado-validar').disabled = false; }
-    function obterChaveRecorde() { return `rec_cam_${document.getElementById('seletor-nota').value}_${document.getElementById('seletor-regiao').value}_${modoEstrutura}`; }
+    function obterChaveRecorde() { return `rec_caged_${document.getElementById('seletor-nota').value}_${document.getElementById('seletor-regiao').value}_${modoEstrutura}`; }
     function gerenciarPainelRecorde() { const r = localStorage.getItem(obterChaveRecorde()) || 0; document.getElementById('val-recorde').innerText = r > 0 ? `${r} BPM` : '--- BPM'; }
     function checarEAtualizarRecorde(b) { if(modoAtualJogo === 'ditado') return; const c = obterChaveRecorde(); if (b > (parseInt(localStorage.getItem(c)) || 0)) { localStorage.setItem(c, b); document.getElementById('val-recorde').innerText = `${b} BPM`; } }
     function limparRecordeAtual() { if (confirm("Zerar recorde?")) { localStorage.removeItem(obterChaveRecorde()); gerenciarPainelRecorde(); } }
@@ -780,17 +784,15 @@
     function autoCorrelate(b, s) { let len = b.length, rms = 0; for (let i = 0; i < len; i++) rms += b[i] * b[i]; if (Math.sqrt(rms / len) < 0.015) return -1; let r1 = 0, r2 = len - 1, th = 0.2; for (let i = 0; i < len / 2; i++) { if (Math.abs(b[i]) < th) { r1 = i; break; } } for (let i = len - 1; i >= len / 2; i--) { if (Math.abs(b[i]) < th) { r2 = i; break; } } b = b.slice(r1, r2); len = b.length; let c = new Float32Array(len); for (let i = 0; i < len; i++) { for (let j = 0; j < len - i; j++) c[i] = c[i] + b[j] * b[j + i]; } let d = 0; while (c[d] > c[d + 1]) d++; let maxv = -1, maxp = -1; for (let i = d; i < len; i++) { if (c[i] > maxv) { maxv = c[i]; maxp = i; } } let t0 = maxp, x1 = c[t0 - 1], x2 = c[t0], x3 = c[t0 + 1], a = (x1 + x3 - 2 * x2) / 2, bl = (x3 - x1) / 2; if (a) t0 = t0 - bl / (2 * a); return s / t0; }
     function inicializarGerenciadorTimer() { const op = document.getElementById('seletor-tempo-bloco').value; if (op === 'livre' || modoAtualJogo === 'ditado') { ocultarComponentesTimer(); return; } tempoTotalConfigurado = parseInt(op) * 60; tempoRestanteSegundos = tempoTotalConfigurado; document.getElementById('wrapper-seletor-tempo').style.display = 'none'; document.getElementById('txt-timer').style.display = 'block'; document.getElementById('timer-barra-bg').style.display = 'block'; atualizarInterfaceGraficaTimer(); intervaloTimerId = setInterval(() => { tempoRestanteSegundos--; atualizarInterfaceGraficaTimer(); if (tempoRestanteSegundos <= 0) { alternarMetronomo(); tocarSinalFimDeBloco(); } }, 1000); }
     function atualizarInterfaceGraficaTimer() { document.getElementById('txt-timer').innerText = `${String(Math.floor(tempoRestanteSegundos / 60)).padStart(2, '0')}:${String(tempoRestanteSegundos % 60).padStart(2, '0')}`; document.getElementById('timer-barra-fill').style.width = `${(tempoRestanteSegundos / tempoTotalConfigurado) * 100}%`; }
-    function ocultarComponentesTimer() { if (intervaloTimerId) clearInterval(intervaloTimerId); if (modoAtualJogo !== 'ditado') document.getElementById('wrapper-seletor-tempo').style.display = 'block'; document.getElementById('txt-timer').style.display = 'none'; document.getElementById('timer-barra-bg').style.display = 'none'; }
+    function ocultarComponentesTimer() { if (intervaloTimerId) clearInterval(intervaloTimerId); if (modoAtualJogo !== 'ditado') document.getElementById('wrapper-seletor-tempo').style.display = 'block'; document.getElementById('txt-timer').style.display = 'none'; document.getElementById('timer-barra-bg').style.none; }
     function tocarSinalFimDeBloco() { if (!audioCtx) return; const t = audioCtx.currentTime; [880, 1109].forEach((f, i) => { let o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.setValueAtTime(f, t + i*0.15); g.gain.setValueAtTime(0.3, t + i*0.15); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.15 + 0.2); o.start(t + i*0.15); o.stop(t + i*0.15 + 0.2); }); }
     function tocarCliqueMetronomo(t, p) { let o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.setValueAtTime(p ? 1000 : 600, t); g.gain.setValueAtTime(0.6, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05); o.start(t); o.stop(t + 0.05); }
     function tocarNotaGuitarra(f, t) { if (!f) return; let o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'triangle'; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(0.4, t); g.gain.exponentialRampToValueAtTime(0.001, t + (modoAtualJogo === 'ditado' ? 0.6 : Math.min(0.4, 30.0 / bpm))); o.start(t); o.stop(t + (modoAtualJogo === 'ditado' ? 0.6 : Math.min(0.4, 30.0 / bpm))); }
 
-    // CORREÇÃO DO ACOMPANHAMENTO: O acorde agora preenche exatamente metade do compasso de 4 tempos (Mínima)
     function tocarAcordeFundo(tonica, tempoDisparo, volumeAlvo) {
       let freqs = frequenciasNotasAcordeBase[tonica];
       if (!freqs) return;
 
-      // Calcula o tempo total de 4 batidas (Compasso inteiro) e divide por 2 para obter a metade (2 tempos)
       let duracaoCompasso = 4 * (60.0 / bpm);
       let duracaoMetadeCompasso = duracaoCompasso / 2;
 
@@ -798,11 +800,10 @@
         let osc = audioCtx.createOscillator();
         let gainNode = audioCtx.createGain();
         
-        osc.type = 'sine'; // Onda macia (Pad/fundo)
+        osc.type = 'sine'; 
         osc.frequency.setValueAtTime(f, tempoDisparo);
         
         gainNode.gain.setValueAtTime(volumeAlvo * 0.25, tempoDisparo); 
-        // Fade out longo e suave sustentando a nota até o próximo gatilho rítmico
         gainNode.gain.exponentialRampToValueAtTime(0.001, tempoDisparo + duracaoMetadeCompasso); 
         
         osc.connect(gainNode);
@@ -826,7 +827,7 @@
       if (isPlaying) {
         btn.innerText = "PARAR TREINO"; btn.className = "btn-play parar";
         nextNoteTime = audioCtx.currentTime + 0.05;
-        pulsoNoCompasso = 0; // Inicia cravado no primeiro tempo
+        pulsoNoCompasso = 0;
         checarEAtualizarRecorde(bpm); inicializarGerenciadorTimer(); scheduler();
       } else {
         btn.innerText = "INICIAR TREINO"; btn.className = "btn-play";
