@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  body {
+    background-color: #1c1c1e;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 15px;
+    box-sizing: border-box;
+  }
+  .painel-controles {
+    background-color: #2c2c2e;
+    padding: 15px;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 550px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+  }
+  .linha-controle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .coluna { flex: 1; display: flex; flex-direction: column; min-width: 80px; }
+  .grupo-inline { display: flex; gap: 4px; align-items: center; }
+  label { font-size: 11px; color: #aeaeae; text-transform: uppercase; margin-bottom: 4px; font-weight: 600; white-space: nowrap; }
+  
+  select, input[type="text"], input[type="number"] {
+    background-color: #1c1c1e;
+    color: #0a84ff;
+    border: 1px solid #48484a;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 8px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    height: 40px;
+  }
+
+  .input-padrao-av { min-width: 45px !important; text-align: center; padding: 10px 5px; }
+  .bpm-display { font-size: 32px; font-weight: bold; color: #34c759; text-align: center; font-family: monospace; }
+  .toggle-container { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+  
+  .painel-recorde {
+    background-color: rgba(255, 215, 0, 0.1);
+    border: 1px dashed rgba(255, 215, 0, 0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+  .recorde-valor { color: #ffd700; font-weight: bold; font-family: monospace; font-size: 15px; }
+  .btn-reset-recorde { background: none; border: none; color: #ff3b30; font-size: 11px; cursor: pointer; text-transform: uppercase; font-weight: 600; padding: 2px 5px; }
+
+  /* HUD DA ESCALA ATIVA */
+  .hud-escala-ativa {
+    width: 100%;
+    max-width: 550px;
+    background-color: #3a3a3c;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    color: #ffd700;
+    box-sizing: border-box;
+    border: 1px solid #48484a;
+  }
+
+  .container-timer { display: flex; width: 100%; max-width: 550px; gap: 10px; align-items: center; margin-bottom: 5px; }
+  .barra-progresso-bg { width: 100%; max-width: 550px; height: 6px; background-color: #48484a; border-radius: 3px; margin-bottom: 15px; overflow: hidden; display: none; }
+  .barra-progresso-fill { height: 100%; width: 100%; background-color: #0a84ff; transition: width 1s linear; }
+  .contador-regressivo { font-family: monospace; font-size: 18px; font-weight: bold; color: #ff9500; min-width: 55px; text-align: center; display: none; }
+  
+  .painel-ditado-status { width: 100%; max-width: 550px; background-color: #2c2c2e; border-radius: 10px; padding: 12px; margin-bottom: 15px; text-align: center; font-weight: bold; font-size: 15px; box-sizing: border-box; display: none; border-left: 5px solid #ff9500; }
+  .container-botoes-ditado { display: none; width: 100%; max-width: 550px; gap: 10px; margin-bottom: 15px; }
+  .btn-ditado-acao { flex: 1; height: 48px; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; color: #ffffff; }
+  .btn-ouvir { background-color: #0a84ff; }
+  .btn-validar { background-color: #bf5af2; }
+  .btn-reset-ditado { background-color: #48484a; flex: 0.6; }
+
+  .fretboard-container { width: 100%; max-width: 550px; overflow-x: auto; background-color: #2c2c2e; padding: 15px 10px; border-radius: 12px; box-sizing: border-box; }
+  .fretboard-table { border-collapse: collapse; font-family: 'Courier New', Courier, monospace; font-size: 13px; font-weight: bold; table-layout: fixed; width: auto; user-select: none; }
+  .fretboard-table th { color: #aeaeae; font-size: 11px; padding-bottom: 8px; text-align: center; min-width: 34px; width: 34px; }
+  .fretboard-table th.label-corda, .fretboard-table td.label-corda { min-width: 45px; width: 45px; text-align: left; color: #ffffff; }
+  .fretboard-table td { padding: 4px 0; text-align: center; position: relative; white-space: nowrap; min-width: 34px; width: 34px; }
+  
+  .line-vazio { color: #ffffff; letter-spacing: -1px; }
+  .penta-inativa { color: #48484a; }
+  .casa-penta-clicavel { cursor: pointer; transition: background-color 0.1s ease; }
+  .casa-penta-clicavel:active { background-color: rgba(255,255,255,0.2); border-radius: 4px; }
+
+  .traste-branco { position: absolute; right: -2px; color: #ffffff; z-index: 1; pointer-events: none; }
+  .pestana-destacada { position: absolute; right: -3px; color: #ffd700; font-size: 14px; font-weight: 900; z-index: 2; pointer-events: none; }
+  
+  .regiao-azul { color: #0a84ff; background-color: rgba(10,132,255,0.25); border-radius: 4px; padding: 2px 0px; font-weight: 900; }
+  .regiao-verde { color: #30d158; background-color: rgba(48,209,88,0.25); border-radius: 4px; padding: 2px 0px; font-weight: 900; }
+  .regiao-vermelho { color: #ff3b30; background-color: rgba(255,59,48,0.25); border-radius: 4px; padding: 2px 0px; font-weight: 900; }
+  
+  .feedback-sucesso { color: #ffffff; background-color: #34c759; border-radius: 4px; padding: 2px 2px; font-weight: 900; }
+  .feedback-erro { color: #ffffff; background-color: #ff3b30; border-radius: 4px; padding: 2px 2px; font-weight: 900; }
+
+  .btn-play { background-color: #34c759; color: #ffffff; border: none; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; flex: 1; box-shadow: 0 4px 12px rgba(52, 199, 89, 0.2); transition: background-color 0.1s ease; height: 54px; }
+  .btn-play.parar { background-color: #ff3b30; box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2); }
+  
+  .btn-visual { background-color: #48484a; color: #ffffff; box-shadow: none; margin-top: 15px; max-width: 550px; width: 100%; }
+  .btn-visual.ativo { background-color: #1c1c1e; border: 2px solid #34c759; color: #34c759; }
+  .btn-visual.flash { background-color: #34c759 !important; color: #ffffff !important; }
+</style>
+</head>
+<body>
+
+  <div class="painel-controles">
+    
+    <div class="painel-recorde">
+      <div>🏆 Recorde (<span id="txt-contexto-recorde">C Fixa - Azul</span>):</div>
+      <div>
+        <span class="recorde-valor" id="val-recorde">000 BPM</span>
+        <button class="btn-reset-recorde" onclick="limparRecordeAtual()">Zerar</button>
+      </div>
+    </div>
+
+    <div class="linha-controle">
+      <div class="coluna" style="flex: 1.2;">
+        <label>Modo Estrutura</label>
+        <select id="seletor-modo-estrutura" onchange="alternarModoEstrutural()">
+          <option value="fixa">Pentatônica Fixa 🔒</option>
+          <option value="caminhada">Caminhada Harmônica 🪜</option>
+        </select>
+      </div>
+      <div class="coluna" style="flex: 0.8;" id="wrapper-tonica-raiz">
+        <label id="label-tonica-dinamica">Tônica / Tom</label>
+        <select id="seletor-nota" onchange="resetarExercicio()">
+          <option value="C" selected>C</option><option value="C#">C#</option><option value="D">D</option><option value="D#">D#</option><option value="E">E</option><option value="F">F</option><option value="F#">F#</option><option value="G">G</option><option value="G#">G#</option><option value="A">A</option><option value="A#">A#</option><option value="B">B</option>
+        </select>
+      </div>
+      <div class="coluna" style="flex: 1.5; display: none;" id="wrapper-projecao-harmonica">
+        <label>Progressão (Graus)</label>
+        <input type="text" id="input-projecao" value="1, 3, 4, 5" placeholder="Ex: 1, 3, 4, 5" onchange="resetarExercicio()">
+      </div>
+      <div class="coluna" style="flex: 1.5;">
+        <label>Região</label>
+        <select id="seletor-regiao" onchange="resetarExercicio()">
+          <option value="azul">Casas 0 a 5 (Azul)</option>
+          <option value="verde">Casas 6 a 11 (Verde)</option>
+          <option value="vermelho">Casas 12 a 15 (Vermelho)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="linha-controle">
+      <div class="coluna" style="flex: 1.3;">
+        <label>Direção</label>
+        <select id="seletor-direcao" onchange="resetarExercicio()">
+          <option value="ambos">Subir e Descer ⇅</option>
+          <option value="subir">Apenas Subir ➔</option>
+          <option value="descer">Apenas Descer ➔</option>
+          <option value="descer-subir">Descer e Subir ⇅</option>
+        </select>
+      </div>
+      <div class="coluna" style="flex: 1.4; min-width: 120px;">
+        <label>Modo de Jogo</label>
+        <select id="seletor-modo-jogo" onchange="alterarModoJogo()">
+          <option value="treino">Treino Técnico ⚙️</option>
+          <option value="ditado">Ditado Melódico 🧠🎵</option>
+        </select>
+      </div>
+      <div class="coluna" style="flex: 1.3; min-width: 110px;" id="wrapper-modo-entrada">
+        <label>Captura / Entrada</label>
+        <select id="seletor-entrada" onchange="alternarOrigemEntrada()">
+          <option value="tela"> Tela 📱</option>
+          <option value="guitarra">Guitarra 🎸</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="linha-controle" id="linha-controles-treino-extra">
+      <div class="coluna" style="flex: 1.2; min-width: 100px;">
+        <label>Áudio / Som</label>
+        <select id="seletor-audio">
+          <option value="notas">Notas 🎵</option>
+          <option value="metronomo">Metrônomo ⏱️</option>
+        </select>
+      </div>
+      <div class="coluna" style="flex: 1.2; min-width: 100px;">
+        <label>Harmonia / Acorde</label>
+        <select id="seletor-fundo-harmonico">
+          <option value="0.1">Acorde: Baixo (10%) 🎸</option>
+          <option value="0.3" selected>Acorde: Médio (30%) 🔊</option>
+          <option value="0.5">Acorde: Alto (50%) 🔥</option>
+          <option value="0">Desativado ❌</option>
+        </select>
+      </div>
+      <div class="coluna" style="flex: 1.2; min-width: 100px;">
+        <label>Visualização</label>
+        <select id="seletor-modo-visao" onchange="formatarBracoVisualAtual()">
+          <option value="notas">Notas</option>
+          <option value="intervalos">Intervalos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="linha-controle" id="linha-controles-treino-extra-2">
+      <div class="coluna" style="flex: 1.1; min-width: 80px;" id="wrapper-padrao-av">
+        <label>Padrão (A, V)</label>
+        <div class="grupo-inline">
+          <input type="number" id="input-avanca" class="input-padrao-av" min="1" max="12" value="3" onchange="resetarExercicio()">
+          <span> </span>
+          <input type="number" id="input-volta" class="input-padrao-av" min="0" max="6" value="0" onchange="resetarExercicio()">
+        </div>
+      </div>
+      <div class="coluna" style="flex: 0.7; min-width: 65px;" id="wrapper-bpm">
+        <label>BPM</label>
+        <input type="number" id="input-bpm" min="40" max="480" value="100" onchange="atualizarBpmManual(this.value)">
+      </div>
+      <div class="coluna" style="flex: 1.2; min-width: 110px; align-items: center; justify-content: center;" id="wrapper-auto-acelerar">
+        <label class="toggle-container">
+          <input type="checkbox" id="chk-acelerar"> Auto-Acelerar
+        </label>
+        <div class="bpm-display" id="display-bpm-real">100</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hud-escala-ativa" id="hud-escala-display">ESCALA ATUAL: C PENTATÔNICA</div>
+
+  <div class="container-timer" id="area-timer-treino">
+    <button class="btn-play" id="btn-main" onclick="alternarMetronomo()">INICIAR TREINO</button>
+    <div class="coluna" style="flex: 0.4; min-width: 110px;" id="wrapper-seletor-tempo">
+      <label>Duração do Bloco</label>
+      <select id="seletor-tempo-bloco">
+        <option value="livre">Livre ∞</option>
+        <option value="1">1 Minuto</option>
+        <option value="2">2 Minutos</option>
+        <option value="5">5 Minutos</option>
+      </select>
+    </div>
+    <div class="contador-regressivo" id="txt-timer">00:00</div>
+  </div>
+
+  <div class="barra-progresso-bg" id="timer-barra-bg">
+    <div class="barra-progresso-fill" id="timer-barra-fill"></div>
+  </div>
+
+  <div class="painel-ditado-status" id="painel-ditado-msg">
+    Clique em "OUVIR FRASE" para gerar o primeiro desafio.
+  </div>
+
+  <div class="container-botoes-ditado" id="area-botoes-ditado">
+    <button class="btn-ditado-acao btn-ouvir" id="btn-ditado-ouvir" onclick="ouvirFraseDitadoAtual()">OUVIR FRASE 🎧</button>
+    <button class="btn-ditado-acao btn-validar" id="btn-ditado-validar" onclick="entrarModoValendo()">VALIDAR RESPOSTA 🎯</button>
+    <button class="btn-ditado-acao btn-reset-ditado" onclick="forcarNovaFraseDitado()">Mudar Frase 🔄</button>
+  </div>
+  
+  <div class="fretboard-container">
+    <div id="braco-tabela-holder"></div>
+  </div>
+
+  <button class="btn-play btn-visual" id="btn-visual-click" onclick="alternarMetronomoVisual()">METRÔNOMO VISUAL: DESATIVADO</button>
+
+  <script>
+    const mapaBraco = {
+      Ea: ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G"],
+      B:  ["B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D"],
+      G:  ["G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#"],
+      D:  ["D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F"],
+      A:  ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C"],
+      Eg: ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G"]
+    };
+
+    const frequenciasBraco = {
+      Eg: [82.41, 87.31, 92.50, 98.00, 103.83, 110.00, 116.54, 123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61, 185.00, 196.00],
+      A:  [110.00, 116.54, 123.47, 130.81, 138.59, 146.83, 155.56, 164.81, 174.61, 185.00, 196.00, 207.65, 220.00, 233.08, 246.94, 261.63],
+      D:  [146.83, 155.56, 164.81, 174.61, 185.00, 196.00, 207.65, 220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23],
+      G:  [196.00, 207.65, 220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16],
+      B:  [246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88, 523.25, 554.37, 587.33],
+      Ea: [329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.25, 698.46, 739.99, 783.99]
+    };
+
+    const notasValidas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const intervalosPentaMaior = [0, 2, 4, 7, 9];
+    const intervalosPentaMenor = [0, 3, 5, 7, 10];
+    const cordasOrdem = ["Ea", "B", "G", "D", "A", "Eg"];
+
+    const mapeamentoGrausCampoHarmonico = {
+      1: { tipo: "maior", semitons: 0, label: "I" },
+      2: { tipo: "menor", semitons: 2, label: "II" },
+      3: { tipo: "menor", semitons: 4, label: "III" },
+      4: { tipo: "maior", semitons: 5, label: "IV" },
+      5: { tipo: "maior", semitons: 7, label: "V" },
+      6: { tipo: "menor", semitons: 9, label: "VI" },
+      7: { tipo: "menor", semitons: 11, label: "VII" }
+    };
+
+    const frequenciasNotasAcordeBase = {
+      "C": [130.81, 164.81, 196.00], "C#": [138.59, 174.61, 207.65],
+      "D": [146.83, 174.61, 220.00], "D#": [155.56, 196.00, 233.08],
+      "E": [164.81, 196.00, 246.94], "F":  [130.81, 174.61, 220.00],
+      "F#": [138.59, 185.00, 233.08], "G":  [146.83, 196.00, 246.94],
+      "G#": [155.56, 207.65, 261.63], "A":  [110.00, 146.83, 164.81],
+      "A#": [116.54, 155.56, 174.61], "B":  [123.47, 164.81, 185.00]
+    };
+
+    let audioCtx = null, isPlaying = false, isVisualActive = false, bpm = 100, timerId = null, nextNoteTime = 0.0;
+    let notasPentaAtivasGlobais = [], sequenciaExerc = [], passoAtual = 0, ultimaCoordenadaAtiva = null;
+    let tempoRestanteSegundos = 0, tempoTotalConfigurado = 0, intervaloTimerId = null;
+    let pulsoNoCompasso = 0; // Rastreador de tempos para sincronizar o acompanhamento harmônico
+
+    let modoAtualJogo = "treino"; 
+    let ditadoTamanhoFraseAtual = 3; 
+    let ditadoValendoAtivo = false;  
+    let ditadoIndiceResposta = 0; 
+    let ditadoNotaFeedbackFisico = null; 
+    let ditadoStatusVisualNota = ""; 
+
+    let modoEstrutura = "fixa";
+    let listaEscalasProjecao = []; 
+
+    let streamMicrofone = null; let analyserNode = null; let buflen = 2048; let buf = new Float32Array(buflen);
+    let loopPitchId = null; let ultimaNotaDetectadaEstavel = ""; let contadorEstabilidadeNota = 0; let timestampUltimaValidacaoReal = 0;
+
+    function obterNotasPentaEspecifica(tonica, tipo) {
+      let idx = notasValidas.indexOf(tonica);
+      let intervalos = (tipo === "maior") ? intervalosPentaMaior : intervalosPentaMenor;
+      return intervalos.map(i => notasValidas[(idx + i) % 12]);
+    }
+
+    function alternarModoEstrutural() {
+      modoEstrutura = document.getElementById('seletor-modo-estrutura').value;
+      const wrapProjecao = document.getElementById('wrapper-projecao-harmonica');
+      const labelTonica = document.getElementById('label-tonica-dinamica');
+
+      if (modoEstrutura === "caminhada") {
+        wrapProjecao.style.display = "flex";
+        labelTonica.innerText = "Tom Mãe";
+      } else {
+        wrapProjecao.style.display = "none";
+        labelTonica.innerText = "Tônica";
+      }
+      resetarExercicio();
+    }
+
+    function calcularEscalasDaProjecao() {
+      const tomMae = document.getElementById('seletor-nota').value;
+      const textoProjecao = document.getElementById('input-projecao').value;
+      let idxMae = notasValidas.indexOf(tomMae);
+      
+      let graus = textoProjecao.split(',').map(s => parseInt(s.trim())).filter(n => n >= 1 && n <= 7);
+      if (graus.length === 0) graus = [1, 3, 4, 5];
+
+      listaEscalasProjecao = graus.map(grau => {
+        let conf = mapeamentoGrausCampoHarmonico[grau];
+        let notaCorta = notasValidas[(idxMae + conf.semitons) % 12];
+        return {
+          tonica: notaCorta,
+          tipo: conf.tipo,
+          label: `${conf.label} (${notaCorta}${conf.tipo === 'menor' ? 'm' : ''})`,
+          notas: obterNotasPentaEspecifica(notaCorta, conf.tipo)
+        };
+      });
+    }
+
+    function obterNomeExibicaoNota(notaAlvo) {
+      const modoVisao = document.getElementById('seletor-modo-visao').value;
+      if (modoVisao === 'notas') {
+        return notaAlvo.length === 1 ? notaAlvo + " " : notaAlvo;
+      } else {
+        let tonicaReferencia = notasPentaAtivasGlobais[0] || "C";
+        let idxT = notasValidas.indexOf(tonicaReferencia);
+        let idxN = notasValidas.indexOf(notaAlvo);
+        let dist = (idxN - idxT + 12) % 12;
+        
+        if (modoEstrutura === "caminhada" && listaEscalasProjecao[0]?.tipo === "maior") {
+          const mInt = { 0: "T ", 2: "2 ", 4: "3 ", 7: "5 ", 9: "6 " };
+          return mInt[dist] || "..";
+        } else {
+          const mInt = { 0: "T ", 3: "b3", 5: "4 ", 7: "5 ", 10: "b7" };
+          return mInt[dist] || "..";
+        }
+      }
+    }
+
+    function formatarBracoVisualAtual() {
+      formatarBraco(ultimaCoordenadaAtiva);
+    }
+
+    function construirTrilhaRegiaoBase(arrayFiltroNotas) {
+      let trilha = [];
+      const regiao = document.getElementById('seletor-regiao').value;
+      const cordasGraveParaAgudo = ["Eg", "A", "D", "G", "B", "Ea"]; 
+      
+      let casaMin = 0, casaMax = 5;
+      if (regiao === "verde") { casaMin = 6; casaMax = 11; }
+      else if (regiao === "vermelho") { casaMin = 12; casaMax = 15; }
+
+      cordasGraveParaAgudo.forEach(corda => {
+        for (let casa = casaMin; casa <= casaMax; casa++) {
+          let notaCasa = mapaBraco[corda][casa];
+          if (arrayFiltroNotas.includes(notaCasa)) {
+            trilha.push({ corda: corda, casa: casa, nota: notaCasa });
+          }
+        }
+      });
+      return trilha;
+    }
+
+    function calcularSequenciaPadrao(baseTrilha) {
+      if (baseTrilha.length === 0) return [];
+      let avanca = parseInt(document.getElementById('input-avanca').value) || 3;
+      let voltaInput = parseInt(document.getElementById('input-volta').value) || 0;
+      if (voltaInput === 0) return [...baseTrilha];
+
+      let volta = voltaInput + 1;
+      let seq = []; let i = 0; 
+
+      while (i < baseTrilha.length) {
+        for (let j = 0; j < avanca; j++) {
+          if (i + j < baseTrilha.length) seq.push(baseTrilha[i + j]);
+        }
+        if (i + avanca >= baseTrilha.length) break;
+        i = (i + avanca) - volta;
+        if (i < 0) i = 0;
+        if (avanca <= voltaInput) i++; 
+      }
+      return seq;
+    }
+
+    function gerarSequenciaExercicio() {
+      let tonicaPadrao = document.getElementById('seletor-nota').value;
+      if (modoEstrutura === "fixa") {
+        let base = construirTrilhaRegiaoBase(notasPentaAtivasGlobais);
+        if (base.length === 0) return [];
+        let subida = calcularSequenciaPadrao(base);
+        let seqFinal = processarDirecaoFluxo(subida);
+        
+        return seqFinal.map(passo => ({
+          ...passo,
+          escalaPertencente: notasPentaAtivasGlobais,
+          labelEscala: `${tonicaPadrao}m (Fixa)`,
+          tonicaAcorde: tonicaPadrao
+        }));
+      } else {
+        calcularEscalasDaProjecao();
+        
+        let todasNotasConjunto = [];
+        listaEscalasProjecao.forEach(esc => todasNotasConjunto.push(...esc.notas));
+        todasNotasConjunto = [...new Set(todasNotasConjunto)];
+
+        let rotaFisicaCompletaBase = construirTrilhaRegiaoBase(todasNotasConjunto);
+        let subidaEstruturadaGuia = calcularSequenciaPadrao(rotaFisicaCompletaBase);
+        let sequenciaFinalDirecao = processarDirecaoFluxo(subidaEstruturadaGuia);
+
+        let totalNotas = sequenciaFinalDirecao.length;
+        let numEscalas = listaEscalasProjecao.length;
+        let tamanhoBloco = Math.max(1, Math.floor(totalNotas / numEscalas));
+
+        let sequenciaHarmonicaResultante = sequenciaFinalDirecao.map((passo, indice) => {
+          let idxEscala = Math.floor(indice / tamanhoBloco);
+          if (idxEscala >= numEscalas) idxEscala = numEscalas - 1;
+          
+          let escalaDoBloco = listaEscalasProjecao[idxEscala];
+          let notaAjustada = passo.nota;
+          if (!escalaDoBloco.notas.includes(notaAjustada)) {
+            notaAjustada = escalaDoBloco.notas[0]; 
+          }
+
+          return {
+            corda: passo.corda,
+            casa: passo.casa,
+            nota: notaAjustada,
+            escalaPertencente: escalaDoBloco.notas,
+            labelEscala: escalaDoBloco.label,
+            tonicaAcorde: escalaDoBloco.tonica
+          };
+        });
+
+        return sequenciaHarmonicaResultante;
+      }
+    }
+
+    function processarDirecaoFluxo(subida) {
+      const direcao = document.getElementById('seletor-direcao').value;
+      let descida = [...subida].reverse();
+      if (direcao === "subir") return subida;
+      if (direcao === "descer") return descida;
+      if (direcao === "ambos") {
+        let descidaCopia = [...descida]; if (descidaCopia.length > 0) descidaCopia.shift();
+        return subida.concat(descidaCopia);
+      }
+      if (direcao === "descer-subir") {
+        let subidaCopia = [...subida]; if (subidaCopia.length > 0) subidaCopia.shift();
+        return descida.concat(subidaCopia);
+      }
+      return subida;
+    }
+
+    function formatarBraco(coordenadaAtiva = null) {
+      ultimaCoordenadaAtiva = coordenadaAtiva;
+      const labels = { Ea: "E_a", B: "B  ", G: "G  ", D: "D  ", A: "A  ", Eg: "E_g" };
+      
+      let escValidaMomento = (coordenadaAtiva && coordenadaAtiva.escalaPertencente) 
+                             ? coordenadaAtiva.escalaPertencente 
+                             : notasPentaAtivasGlobais;
+
+      let tableHtml = `<table class="fretboard-table"><thead><tr><th class="label-corda"></th>`;
+      for (let casa = 0; casa <= 15; casa++) tableHtml += `<th>${casa}</th>`;
+      tableHtml += `</tr></thead><tbody>`;
+
+      cordasOrdem.forEach(corda => {
+        tableHtml += `<tr><td class="label-corda">${labels[corda]}</td>`;
+        for (let casa = 0; casa <= 15; casa++) {
+          const nota = mapaBraco[corda][casa];
+          const estaNaEscala = escValidaMomento.includes(nota);
+          
+          const eANotaTocandoTecnico = (modoAtualJogo === "treino" && coordenadaAtiva && coordenadaAtiva.corda === corda && coordenadaAtiva.casa === casa);
+          const eANotaFeedbackDitado = (modoAtualJogo === "ditado" && ditadoNotaFeedbackFisico && ditadoNotaFeedbackFisico.corda === corda && ditadoNotaFeedbackFisico.casa === casa);
+          
+          if (estaNaEscala) {
+            let label = obterNomeExibicaoNota(nota);
+            let clickAttr = `onclick="processarCliqueUsuarioDitado('${corda}', ${casa})"`;
+            tableHtml += `<td class="casa-penta-clicavel" ${clickAttr}>`;
+            
+            if (eANotaTocandoTecnico) {
+              let cor = casa <= 5 ? "regiao-azul" : (casa <= 11 ? "regiao-verde" : "regiao-vermelho");
+              tableHtml += `<span class="${cor}">[${label}]</span>`;
+            } else if (eANotaFeedbackDitado) {
+              let classeFeedback = ditadoStatusVisualNota === "sucesso" ? "feedback-sucesso" : "feedback-erro";
+              tableHtml += `<span class="${classeFeedback}">[${label}]</span>`;
+            } else {
+              if (modoAtualJogo === "ditado" && ditadoValendoAtivo) {
+                tableHtml += `<span class="penta-inativa">[??]</span>`;
+              } else {
+                tableHtml += `<span class="penta-inativa">[${label}]</span>`;
+              }
+            }
+          } else {
+            tableHtml += `<td><span class="line-vazio">══════</span>`;
+          }
+          if (casa < 15) tableHtml += (casa === 0) ? `<span class="pestana-destacada">║</span>` : `<span class="traste-branco">╪</span>`;
+          tableHtml += `</td>`;
+        }
+        tableHtml += `</tr>`;
+      });
+      tableHtml += `</tbody></table>`;
+      document.getElementById('braco-tabela-holder').innerHTML = tableHtml;
+    }
+
+    function resetarExercicio() {
+      let notaTonica = document.getElementById('seletor-nota').value;
+      
+      if (modoEstrutura === "fixa") {
+        notasPentaAtivasGlobais = obterNotasPentaEspecifica(notaTonica, "menor");
+        document.getElementById('hud-escala-display').innerText = `ESCALA ATUAL: PENTATÔNICA DE ${notaTonica} MENOR`;
+      } else {
+        calcularEscalasDaProjecao();
+        notasPentaAtivasGlobais = listaEscalasProjecao[0]?.notas || [];
+        document.getElementById('hud-escala-display').innerText = `🪜 CAMINHADA INICIAL: ${listaEscalasProjecao[0]?.label || ''}`;
+      }
+
+      sequenciaExerc = gerarSequenciaExercicio();
+      passoAtual = 0; ditadoIndiceResposta = 0; pulsoNoCompasso = 0;
+      formatarBraco(null);
+      gerenciarPainelRecorde();
+    }
+
+    function scheduler() {
+      while (nextNoteTime < audioCtx.currentTime + 0.1) {
+        if (sequenciaExerc.length === 0) return;
+        
+        let elementoAudio = document.getElementById('seletor-audio');
+        let modoAudio = elementoAudio ? elementoAudio.value : 'notas';
+        let notaAlvo = sequenciaExerc[passoAtual];
+        
+        // REGRA DE ACOMPANHAMENTO: Dispara no Início (Tempo 0) e na Metade (Tempo 2) de um compasso de 4 tempos
+        let volumeFundo = parseFloat(document.getElementById('seletor-fundo-harmonico').value) || 0;
+        if (volumeFundo > 0 && notaAlvo) {
+          if (pulsoNoCompasso === 0 || pulsoNoCompasso === 2) {
+            tocarAcordeFundo(notaAlvo.tonicaAcorde, nextNoteTime, volumeFundo);
+          }
+        }
+
+        if (modoAudio === 'notas' && notaAlvo) {
+          let frequenciaDinamica = frequenciasBraco[notaAlvo.corda][notaAlvo.casa];
+          tocarNotaGuitarra(frequenciaDinamica, nextNoteTime);
+        } else if (modoAudio === 'metronomo') {
+          tocarCliqueMetronomo(nextNoteTime, pulsoNoCompasso === 0);
+        }
+
+        setTimeout(() => {
+          if (!isPlaying) return;
+          
+          if (notaAlvo?.labelEscala) {
+            let infoFundo = volumeFundo > 0 ? ` 🎸 [Fundo: Acorde ${notaAlvo.tonicaAcorde}]` : '';
+            document.getElementById('hud-escala-display').innerText = `${modoEstrutura === 'caminhada' ? '🪜' : '🔒'} ESCALA ATIVA: ${notaAlvo.labelEscala}${infoFundo}`;
+          }
+          
+          formatarBraco(notaAlvo);
+          dispararFlashVisual();
+        }, (nextNoteTime - audioCtx.currentTime) * 1000);
+
+        nextNoteTime += 60.0 / bpm;
+        passoAtual++;
+        pulsoNoCompasso = (pulsoNoCompasso + 1) % 4; // Rotaciona ciclicamente: 0, 1, 2, 3 (Compasso 4/4)
+        
+        if (passoAtual >= sequenciaExerc.length) {
+          passoAtual = 0;
+          checarEAtualizarRecorde(bpm);
+          if (document.getElementById('chk-acelerar').checked) {
+            bpm = Math.min(480, bpm + 2);
+            document.getElementById('input-bpm').value = bpm;
+            document.getElementById('display-bpm-real').innerText = bpm;
+          }
+        }
+      }
+      timerId = setTimeout(scheduler, 25);
+    }
+
+    function processarNotaFisicaDetectada(notaTocada) {
+      if (modoAtualJogo !== "ditado") return;
+      let regiao = document.getElementById('seletor-regiao').value;
+      let casaMin = 0, casaMax = 5;
+      if (regiao === "verde") { casaMin = 6; casaMax = 11; }
+      else if (regiao === "vermelho") { casaMin = 12; casaMax = 15; }
+
+      let escAlvoFiltro = (sequenciaExerc[ditadoIndiceResposta]?.escalaPertencente)
+                          ? sequenciaExerc[ditadoIndiceResposta].escalaPertencente : notasPentaAtivasGlobais;
+
+      let coordenadasValidas = [];
+      cordasOrdem.forEach(corda => {
+        for (let casa = casaMin; casa <= casaMax; casa++) {
+          if (mapaBraco[corda][casa] === notaTocada && escAlvoFiltro.includes(notaTocada)) {
+            coordenadasValidas.push({ corda: corda, casa: casa });
+          }
+        }
+      });
+      if (coordenadasValidas.length === 0) return;
+      let feedbackCoord = coordenadasValidas[0];
+
+      if (!ditadoValendoAtivo) {
+        ditadoNotaFeedbackFisico = feedbackCoord; ditadoStatusVisualNota = "sucesso"; formatarBraco(null);
+        setTimeout(() => { ditadoNotaFeedbackFisico = null; formatarBraco(null); }, 300);
+        return;
+      }
+
+      let notaCorretaAlvo = sequenciaExerc[ditadoIndiceResposta];
+      if (notaTocada === notaCorretaAlvo.nota) {
+        let coordExata = coordenadasValidas.find(c => c.corda === notaCorretaAlvo.corda && c.casa === notaCorretaAlvo.casa) || feedbackCoord;
+        ditadoNotaFeedbackFisico = coordExata; ditadoStatusVisualNota = "sucesso"; formatarBraco(null);
+        ditadoIndiceResposta++;
+        document.getElementById('painel-ditado-msg').innerText = `🎸 ACERTOU! (${notaTocada}) - ${ditadoIndiceResposta} de ${ditadoTamanhoFraseAtual}`;
+        if (ditadoIndiceResposta >= sequenciaExerc.length) finalizarSucessoDitado();
+      } else {
+        falharDitado(feedbackCoord);
+      }
+    }
+
+    function processarCliqueUsuarioDitado(cordaClicada, casaClicada) {
+      if (modoAtualJogo !== "ditado") return;
+      if (document.getElementById('seletor-entrada').value === "guitarra") return;
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      
+      tocarNotaGuitarra(frequenciasBraco[cordaClicada][casaClicada], audioCtx.currentTime);
+
+      if (!ditadoValendoAtivo) {
+        ditadoNotaFeedbackFisico = { corda: cordaClicada, casa: casaClicada }; ditadoStatusVisualNota = "sucesso"; formatarBraco(null);
+        setTimeout(() => { ditadoNotaFeedbackFisico = null; formatarBraco(null); }, 150);
+        return;
+      }
+
+      let notaCorretaAlvo = sequenciaExerc[ditadoIndiceResposta];
+      ditadoNotaFeedbackFisico = { corda: cordaClicada, casa: casaClicada };
+
+      if (cordaClicada === notaCorretaAlvo.corda && casaClicada === notaCorretaAlvo.casa) {
+        ditadoStatusVisualNota = "sucesso"; formatarBraco(null); ditadoIndiceResposta++;
+        if (ditadoIndiceResposta >= sequenciaExerc.length) finalizarSucessoDitado();
+      } else {
+        falharDitado({ corda: cordaClicada, casa: casaClicada });
+      }
+    }
+
+    function finalizarSucessoDitado() {
+      ditadoValendoAtivo = false; ditadoTamanhoFraseAtual++;
+      sequenciaExerc = null; sequenciaExerc = gerarSequenciaExercicio();
+      document.getElementById('painel-ditado-msg').innerText = `🏆 PERFEITO! Dominou o salto! Frase expandida para ${ditadoTamanhoFraseAtual} notas!`;
+      document.getElementById('painel-ditado-msg').style.borderLeftColor = "#34c759";
+      desbloquearBotoesDitado();
+    }
+
+    function falharDitado(coord) {
+      ditadoStatusVisualNota = "error"; formatarBraco(null); ditadoIndiceResposta = 0;
+      document.getElementById('painel-ditado-msg').innerText = `❌ OPA! Fora do padrão harmónico. Frase reiniciada.`;
+      document.getElementById('painel-ditado-msg').style.borderLeftColor = "#ff3b30";
+      desbloquearBotoesDitado();
+      setTimeout(() => { ditadoNotaFeedbackFisico = null; formatarBraco(null); }, 500);
+    }
+
+    function ouvirFraseDitadoAtual() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      bloquearBotoesDitado();
+      let tempoEspaco = 0.8; let tempoDeLargada = audioCtx.currentTime + 0.1;
+
+      sequenciaExerc.forEach((notaAlvo, idx) => {
+        let momentoExato = tempoDeLargada + (idx * tempoEspaco);
+        tocarNotaGuitarra(frequenciasBraco[notaAlvo.corda][notaAlvo.casa], momentoExato);
+        setTimeout(() => {
+          if (notaAlvo?.labelEscala) {
+            document.getElementById('hud-escala-display').innerText = `🎧 FRASE: PENTATÔNICA DE ${notaAlvo.labelEscala}`;
+          }
+          formatarBraco(notaAlvo);
+        }, (momentoExato - audioCtx.currentTime) * 1000);
+      });
+
+      setTimeout(() => { formatarBraco(null); desbloquearBotoesDitado(); }, (tempoDeLargada + (sequenciaExerc.length * tempoEspaco) - audioCtx.currentTime) * 1000);
+    }
+
+    function entrarModoValendo() {
+      if(sequenciaExerc.length === 0) return;
+      ditadoValendoAtivo = true; ditadoIndiceResposta = 0; formatarBraco(null);
+      document.getElementById('painel-ditado-msg').innerText = `🔥 SEQUÊNCIA OCULTADA! Toque as ${ditadoTamanhoFraseAtual} notas corretas!`;
+      document.getElementById('painel-ditado-msg').style.borderLeftColor = "#bf5af2";
+    }
+
+    function forcarNovaFraseDitado() {
+      ditadoTamanhoFraseAtual = 3; ditadoValendoAtivo = false; ditadoIndiceResposta = 0;
+      sequenciaExerc = null; sequenciaExerc = gerarSequenciaExercicio();
+      formatarBraco(null);
+    }
+
+    function bloquearBotoesDitado() { document.getElementById('btn-ditado-ouvir').disabled = true; document.getElementById('btn-ditado-validar').disabled = true; }
+    function desbloquearBotoesDitado() { document.getElementById('btn-ditado-ouvir').disabled = false; document.getElementById('btn-ditado-validar').disabled = false; }
+    function obterChaveRecorde() { return `rec_cam_${document.getElementById('seletor-nota').value}_${document.getElementById('seletor-regiao').value}_${modoEstrutura}`; }
+    function gerenciarPainelRecorde() { const r = localStorage.getItem(obterChaveRecorde()) || 0; document.getElementById('val-recorde').innerText = r > 0 ? `${r} BPM` : '--- BPM'; }
+    function checarEAtualizarRecorde(b) { if(modoAtualJogo === 'ditado') return; const c = obterChaveRecorde(); if (b > (parseInt(localStorage.getItem(c)) || 0)) { localStorage.setItem(c, b); document.getElementById('val-recorde').innerText = `${b} BPM`; } }
+    function limparRecordeAtual() { if (confirm("Zerar recorde?")) { localStorage.removeItem(obterChaveRecorde()); gerenciarPainelRecorde(); } }
+    function atualizarBpmManual(v) { bpm = Math.max(40, Math.min(480, parseInt(v))); document.getElementById('display-bpm-real').innerText = bpm; }
+    
+    function alterarModoJogo() { 
+      modoAtualJogo = document.getElementById('seletor-modo-jogo').value; 
+      if (isPlaying) alternarMetronomo(); 
+      desativarCapturaMicrofone(); 
+      document.getElementById('area-timer-treino').style.display = modoAtualJogo === 'ditado' ? 'none' : 'flex'; 
+      document.getElementById('linha-controles-treino-extra').style.display = modoAtualJogo === 'ditado' ? 'none' : 'flex'; 
+      document.getElementById('linha-controles-treino-extra-2').style.display = modoAtualJogo === 'ditado' ? 'none' : 'flex'; 
+      document.getElementById('area-botoes-ditado').style.display = modoAtualJogo === 'ditado' ? 'flex' : 'none'; 
+      document.getElementById('painel-ditado-msg').style.display = modoAtualJogo === 'ditado' ? 'block' : 'none'; 
+      resetarExercicio(); 
+    }
+    
+    function alternarOrigemEntrada() { if (document.getElementById('seletor-entrada').value === "guitarra") ativarCapturaMicrofone(); else desativarCapturaMicrofone(); }
+    
+    async function ativarCapturaMicrofone() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      try {
+        streamMicrofone = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+        let source = audioCtx.createMediaStreamSource(streamMicrofone);
+        analyserNode = audioCtx.createAnalyser(); analyserNode.fftSize = 2048; source.connect(analyserNode);
+        executarLoopVerificacaoPitch();
+      } catch (err) { alert("Microfone bloqueado."); document.getElementById('seletor-entrada').value = "tela"; }
+    }
+    function desativarCapturaMicrofone() { if (loopPitchId) cancelAnimationFrame(loopPitchId); if (streamMicrofone) streamMicrofone.getTracks().forEach(t => t.stop()); analyserNode = null; }
+    function executarLoopVerificacaoPitch() { if (!analyserNode) return; analyserNode.getFloatTimeDomainData(buf); let f = autoCorrelate(buf, audioCtx.sampleRate); if (f !== -1) { let n = notasValidas[Math.round(12 * (Math.log(f / 440) / Math.log(2)) + 69) % 12]; if (n === ultimaNotaDetectadaEstavel) contadorEstabilidadeNota++; else { ultimaNotaDetectadaEstavel = n; contadorEstabilidadeNota = 0; } if (contadorEstabilidadeNota >= 3) { let a = Date.now(); if (a - timestampUltimaValidacaoReal > 700) { processarNotaFisicaDetectada(n); timestampUltimaValidacaoReal = a; contadorEstabilidadeNota = 0; } } } loopPitchId = requestAnimationFrame(executarLoopVerificacaoPitch); }
+    function autoCorrelate(b, s) { let len = b.length, rms = 0; for (let i = 0; i < len; i++) rms += b[i] * b[i]; if (Math.sqrt(rms / len) < 0.015) return -1; let r1 = 0, r2 = len - 1, th = 0.2; for (let i = 0; i < len / 2; i++) { if (Math.abs(b[i]) < th) { r1 = i; break; } } for (let i = len - 1; i >= len / 2; i--) { if (Math.abs(b[i]) < th) { r2 = i; break; } } b = b.slice(r1, r2); len = b.length; let c = new Float32Array(len); for (let i = 0; i < len; i++) { for (let j = 0; j < len - i; j++) c[i] = c[i] + b[j] * b[j + i]; } let d = 0; while (c[d] > c[d + 1]) d++; let maxv = -1, maxp = -1; for (let i = d; i < len; i++) { if (c[i] > maxv) { maxv = c[i]; maxp = i; } } let t0 = maxp, x1 = c[t0 - 1], x2 = c[t0], x3 = c[t0 + 1], a = (x1 + x3 - 2 * x2) / 2, bl = (x3 - x1) / 2; if (a) t0 = t0 - bl / (2 * a); return s / t0; }
+    function inicializarGerenciadorTimer() { const op = document.getElementById('seletor-tempo-bloco').value; if (op === 'livre' || modoAtualJogo === 'ditado') { ocultarComponentesTimer(); return; } tempoTotalConfigurado = parseInt(op) * 60; tempoRestanteSegundos = tempoTotalConfigurado; document.getElementById('wrapper-seletor-tempo').style.display = 'none'; document.getElementById('txt-timer').style.display = 'block'; document.getElementById('timer-barra-bg').style.display = 'block'; atualizarInterfaceGraficaTimer(); intervaloTimerId = setInterval(() => { tempoRestanteSegundos--; atualizarInterfaceGraficaTimer(); if (tempoRestanteSegundos <= 0) { alternarMetronomo(); tocarSinalFimDeBloco(); } }, 1000); }
+    function atualizarInterfaceGraficaTimer() { document.getElementById('txt-timer').innerText = `${String(Math.floor(tempoRestanteSegundos / 60)).padStart(2, '0')}:${String(tempoRestanteSegundos % 60).padStart(2, '0')}`; document.getElementById('timer-barra-fill').style.width = `${(tempoRestanteSegundos / tempoTotalConfigurado) * 100}%`; }
+    function ocultarComponentesTimer() { if (intervaloTimerId) clearInterval(intervaloTimerId); if (modoAtualJogo !== 'ditado') document.getElementById('wrapper-seletor-tempo').style.display = 'block'; document.getElementById('txt-timer').style.display = 'none'; document.getElementById('timer-barra-bg').style.display = 'none'; }
+    function tocarSinalFimDeBloco() { if (!audioCtx) return; const t = audioCtx.currentTime; [880, 1109].forEach((f, i) => { let o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.setValueAtTime(f, t + i*0.15); g.gain.setValueAtTime(0.3, t + i*0.15); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.15 + 0.2); o.start(t + i*0.15); o.stop(t + i*0.15 + 0.2); }); }
+    function tocarCliqueMetronomo(t, p) { let o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.setValueAtTime(p ? 1000 : 600, t); g.gain.setValueAtTime(0.6, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05); o.start(t); o.stop(t + 0.05); }
+    function tocarNotaGuitarra(f, t) { if (!f) return; let o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'triangle'; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(0.4, t); g.gain.exponentialRampToValueAtTime(0.001, t + (modoAtualJogo === 'ditado' ? 0.6 : Math.min(0.4, 30.0 / bpm))); o.start(t); o.stop(t + (modoAtualJogo === 'ditado' ? 0.6 : Math.min(0.4, 30.0 / bpm))); }
+
+    // CORREÇÃO DO ACOMPANHAMENTO: O acorde agora preenche exatamente metade do compasso de 4 tempos (Mínima)
+    function tocarAcordeFundo(tonica, tempoDisparo, volumeAlvo) {
+      let freqs = frequenciasNotasAcordeBase[tonica];
+      if (!freqs) return;
+
+      // Calcula o tempo total de 4 batidas (Compasso inteiro) e divide por 2 para obter a metade (2 tempos)
+      let duracaoCompasso = 4 * (60.0 / bpm);
+      let duracaoMetadeCompasso = duracaoCompasso / 2;
+
+      freqs.forEach(f => {
+        let osc = audioCtx.createOscillator();
+        let gainNode = audioCtx.createGain();
+        
+        osc.type = 'sine'; // Onda macia (Pad/fundo)
+        osc.frequency.setValueAtTime(f, tempoDisparo);
+        
+        gainNode.gain.setValueAtTime(volumeAlvo * 0.25, tempoDisparo); 
+        // Fade out longo e suave sustentando a nota até o próximo gatilho rítmico
+        gainNode.gain.exponentialRampToValueAtTime(0.001, tempoDisparo + duracaoMetadeCompasso); 
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.start(tempoDisparo);
+        osc.stop(tempoDisparo + duracaoMetadeCompasso);
+      });
+    }
+
+    function dispararFlashVisual() { if (!isVisualActive) return; const b = document.getElementById('btn-visual-click'); b.classList.add('flash'); setTimeout(() => { b.classList.remove('flash'); }, Math.min(60, (30.0 / bpm) * 1000)); }
+    function alternarMetronomoVisual() { isVisualActive = !isVisualActive; const b = document.getElementById('btn-visual-click'); b.className = isVisualActive ? "btn-play btn-visual ativo" : "btn-play btn-visual"; b.innerText = isVisualActive ? "METRÔNOMO VISUAL: ATIVADO" : "METRÔNOMO VISUAL: DESATIVADO"; b.classList.remove('flash'); }
+    
+    function alternarMetronomo() {
+      if (modoAtualJogo === "ditado") return;
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      isPlaying = !isPlaying;
+      let btn = document.getElementById('btn-main');
+      if (isPlaying) {
+        btn.innerText = "PARAR TREINO"; btn.className = "btn-play parar";
+        nextNoteTime = audioCtx.currentTime + 0.05;
+        pulsoNoCompasso = 0; // Inicia cravado no primeiro tempo
+        checarEAtualizarRecorde(bpm); inicializarGerenciadorTimer(); scheduler();
+      } else {
+        btn.innerText = "INICIAR TREINO"; btn.className = "btn-play";
+        clearTimeout(timerId); ocultarComponentesTimer(); formatarBraco(null);
+        document.getElementById('btn-visual-click').classList.remove('flash');
+      }
+    }
+
+    resetarExercicio();
+  </script>
+
+</body>
+</html>
