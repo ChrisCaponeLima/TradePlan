@@ -221,9 +221,10 @@
       <div class="coluna" style="flex: 1.2; min-width: 100px;">
         <label>Estilo da Base</label>
         <select id="seletor-estilo-base">
-          <option value="padrao" selected>Espaçado 🔒</option>
+          <option value="padrao">Espaçado 🔒</option>
           <option value="palhetada">Palhetada Reta (Muted) 🌊</option>
-          <option value="rock">Levada Rock ⚡</option>
+          <option value="newmetal" selected>Nu Metal (Chugging) ⚡</option>
+          <option value="rock">Levada Rock 🎸</option>
         </select>
       </div>
       <div class="coluna" style="flex: 1.2; min-width: 100px;">
@@ -569,7 +570,6 @@
       return subida;
     }
 
-    // AQUI ESTÁ A FUNÇÃO DO BRAÇO QUE ESTAVA FALTANDO!
     function formatarBraco(coordenadaAtiva = null) {
       ultimaCoordenadaAtiva = coordenadaAtiva;
       const labels = { Ea: "E_a", B: "B  ", G: "G  ", D: "D  ", A: "A  ", Eg: "E_g" };
@@ -651,7 +651,6 @@
         let estiloBase = document.getElementById('seletor-estilo-base').value;
 
         if (volumeFundo > 0 && notaAlvo) {
-          // Dispara a lógica de acompanhamento baseada no estilo selecionado
           tocarAcordeFundoGerenciador(notaAlvo.tonicaAcorde, nextNoteTime, volumeFundo, estiloBase);
         }
 
@@ -697,24 +696,30 @@
       timerId = setTimeout(scheduler, 25);
     }
 
-    // Gerenciador inteligente do Estilo de Base para modular o motor de áudio
     function tocarAcordeFundoGerenciador(tonica, tempoDisparo, volumeAlvo, estilo) {
+      let tempoPorBatida = 60.0 / bpm;
+      
       if (estilo === "padrao") {
-        // Toca apenas nos pulsos 0 e 2 (Acorde Aberto e sustentado)
         if (pulsoNoCompasso === 0 || pulsoNoCompasso === 2) {
           tocarAcordeFundo(tonica, tempoDisparo, volumeAlvo, 0.4, false);
         }
       } else if (estilo === "palhetada") {
-        // Subdivisão em Colcheias: duas batidas rápidas por tempo com Palm Muting (Abafado)
-        let intervaloColcheia = (60.0 / bpm) / 2;
+        let intervaloColcheia = tempoPorBatida / 2;
         tocarAcordeFundo(tonica, tempoDisparo, volumeAlvo * 0.7, 0.06, true);
         tocarAcordeFundo(tonica, tempoDisparo + intervaloColcheia, volumeAlvo * 0.5, 0.05, true);
+      } else if (estilo === "newmetal") {
+        // NU METAL: Palhetada contínua, linear, sem pausas e sem dinâmicas fracas (Chugging reto tumtumtum)
+        let intervaloColcheia = tempoPorBatida / 2;
+        // O tempo de sustentação é ligeiramente maior do que o intervalo para "colar" os ataques eliminando silêncios
+        let duracaoColada = intervaloColcheia * 1.1; 
+        
+        tocarAcordeFundo(tonica, tempoDisparo, volumeAlvo * 0.8, duracaoColada, true);
+        tocarAcordeFundo(tonica, tempoDisparo + intervaloColcheia, volumeAlvo * 0.8, duracaoColada, true);
       } else if (estilo === "rock") {
-        // Desenho Rítmico Clássico: Bate (Forte), abafa, bate-bate, abafa
-        let intervaloColcheia = (60.0 / bpm) / 2;
+        let intervaloColcheia = tempoPorBatida / 2;
         if (pulsoNoCompasso === 0 || pulsoNoCompasso === 2) {
-          tocarAcordeFundo(tonica, tempoDisparo, volumeAlvo, 0.25, false); // Ataque aberto
-          tocarAcordeFundo(tonica, tempoDisparo + intervaloColcheia, volumeAlvo * 0.6, 0.06, true); // Retorno abafado
+          tocarAcordeFundo(tonica, tempoDisparo, volumeAlvo, 0.25, false); 
+          tocarAcordeFundo(tonica, tempoDisparo + intervaloColcheia, volumeAlvo * 0.6, 0.06, true); 
         } else {
           tocarAcordeFundo(tonica, tempoDisparo, volumeAlvo * 0.5, 0.06, true);
           tocarAcordeFundo(tonica, tempoDisparo + intervaloColcheia, volumeAlvo * 0.5, 0.06, true);
@@ -855,7 +860,7 @@
       } catch (err) { alert("Microfone bloqueado."); document.getElementById('seletor-entrada').value = "tela"; }
     }
     function desativarCapturaMicrofone() { if (loopPitchId) cancelAnimationFrame(loopPitchId); if (streamMicrofone) streamMicrofone.getTracks().forEach(t => t.stop()); analyserNode = null; }
-    function executarLoopVerificacaoPitch() { if (!analyserNode) return; analyserNode.getFloatTimeDomainData(buf); let f = autoCorrelate(buf, audioCtx.sampleRate); if (f !== -1) { let n = notasValidas[Math.round(12 * (Math.log(f / 440) / Math.log(2)) + 69) % 12]; if (n === ultimaNotaDetectadaEstavel) contadorEstabilidadeNota++; else { ultimaNotaDetectadaEstavel = n; contadorEstabilidadeNota = 0; } if (contadorEstabilidadeNota >= 3) { let a = Date.now(); if (a - timestampUltimaValidacaoReal > 700) { processarNotaFisicaDetectada(n); timestampUltimaValidacaoReal = a; contadorEstabilidadeNota = 0; } } } loopPitchId = requestAnimationFrame(executarLoopVerificacaoPitch); }
+    function ejecutarLoopVerificacaoPitch() { if (!analyserNode) return; analyserNode.getFloatTimeDomainData(buf); let f = autoCorrelate(buf, audioCtx.sampleRate); if (f !== -1) { let n = notasValidas[Math.round(12 * (Math.log(f / 440) / Math.log(2)) + 69) % 12]; if (n === ultimaNotaDetectadaEstavel) contadorEstabilidadeNota++; else { ultimaNotaDetectadaEstavel = n; contadorEstabilidadeNota = 0; } if (contadorEstabilidadeNota >= 3) { let a = Date.now(); if (a - timestampUltimaValidacaoReal > 700) { processarNotaFisicaDetectada(n); timestampUltimaValidacaoReal = a; contadorEstabilidadeNota = 0; } } } loopPitchId = requestAnimationFrame(executarLoopVerificacaoPitch); }
     function autoCorrelate(b, s) { let len = b.length, rms = 0; for (let i = 0; i < len; i++) rms += b[i] * b[i]; if (Math.sqrt(rms / len) < 0.015) return -1; let r1 = 0, r2 = len - 1, th = 0.2; for (let i = 0; i < len / 2; i++) { if (Math.abs(b[i]) < th) { r1 = i; break; } } for (let i = len - 1; i >= len / 2; i--) { if (Math.abs(b[i]) < th) { r2 = i; break; } } b = b.slice(r1, r2); len = b.length; let c = new Float32Array(len); for (let i = 0; i < len; i++) { for (let j = 0; j < len - i; j++) c[i] = c[i] + b[j] * b[j + i]; } let d = 0; while (c[d] > c[d + 1]) d++; let maxv = -1, maxp = -1; for (let i = d; i < len; i++) { if (c[i] > maxv) { maxv = c[i]; maxp = i; } } let t0 = maxp, x1 = c[t0 - 1], x2 = c[t0], x3 = c[t0 + 1], a = (x1 + x3 - 2 * x2) / 2, bl = (x3 - x1) / 2; if (a) t0 = t0 - bl / (2 * a); return s / t0; }
     function inicializarGerenciadorTimer() { const op = document.getElementById('seletor-tempo-bloco').value; if (op === 'livre' || modoAtualJogo === 'ditado') { ocultarComponentesTimer(); return; } tempoTotalConfigurado = parseInt(op) * 60; tempoRestanteSegundos = tempoTotalConfigurado; document.getElementById('wrapper-seletor-tempo').style.display = 'none'; document.getElementById('txt-timer').style.display = 'block'; document.getElementById('timer-barra-bg').style.display = 'block'; atualizarInterfaceGraficaTimer(); intervaloTimerId = setInterval(() => { tempoRestanteSegundos--; atualizarInterfaceGraficaTimer(); if (tempoRestanteSegundos <= 0) { alternarMetronomo(); tocarSinalFimDeBloco(); } }, 1000); }
     function atualizarInterfaceGraficaTimer() { document.getElementById('txt-timer').innerText = `${String(Math.floor(tempoRestanteSegundos / 60)).padStart(2, '0')}:${String(tempoRestanteSegundos % 60).padStart(2, '0')}`; document.getElementById('timer-barra-fill').style.width = `${(tempoRestanteSegundos / tempoTotalConfigurado) * 100}%`; }
@@ -864,7 +869,6 @@
     function tocarCliqueMetronomo(t, p) { let o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.setValueAtTime(p ? 1000 : 600, t); g.gain.setValueAtTime(0.6, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05); o.start(t); o.stop(t + 0.05); }
     function tocarNotaGuitarra(f, t) { if (!f) return; let o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'triangle'; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(0.4, t); g.gain.exponentialRampToValueAtTime(0.001, t + (modoAtualJogo === 'ditado' ? 0.6 : Math.min(0.4, 30.0 / bpm))); o.start(t); o.stop(t + (modoAtualJogo === 'ditado' ? 0.6 : Math.min(0.4, 30.0 / bpm))); }
 
-    // Função de áudio atualizada para suportar dynamic attack e Palm Muting real
     function tocarAcordeFundo(tonica, tempoDisparo, volumeAlvo, duracaoSustentada, usarPalmMuting) {
       let freqs = frequenciasNotasAcordeBase[tonica];
       if (!freqs) return;
@@ -873,17 +877,14 @@
         let osc = audioCtx.createOscillator(); 
         let gainNode = audioCtx.createGain();
         
-        // Formato de onda senoidal para a cama harmônica não brigar com o solo
         osc.type = 'sine'; 
         osc.frequency.setValueAtTime(f, tempoDisparo);
         
         gainNode.gain.setValueAtTime(volumeAlvo * 0.25, tempoDisparo);
         
         if (usarPalmMuting) {
-          // Curva de decaimento super rápida simulando a palma da mão abafando a corda
           gainNode.gain.exponentialRampToValueAtTime(0.001, tempoDisparo + duracaoSustentada);
         } else {
-          // Decaimento suave para acordes abertos
           gainNode.gain.linearRampToValueAtTime(volumeAlvo * 0.1, tempoDisparo + duracaoSustentada * 0.7);
           gainNode.gain.exponentialRampToValueAtTime(0.001, tempoDisparo + duracaoSustentada);
         }
