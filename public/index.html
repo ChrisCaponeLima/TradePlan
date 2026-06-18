@@ -1,10 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Gym Project</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Projeto Conan</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Conan">
+    
     <style>
         :root {
             --bg-color: #0d0d11;
@@ -26,7 +30,8 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             padding: 20px;
-            padding-bottom: 80px;
+            padding-top: calc(20px + env(safe-area-inset-top));
+            padding-bottom: 95px;
         }
 
         header {
@@ -57,7 +62,6 @@
         .revision-alert {
             background-color: var(--accent-color) !important;
             color: #fff !important;
-            animation: pulse 2s infinite;
         }
 
         .progresso-treino-container {
@@ -91,13 +95,7 @@
             transition: width 0.4s ease;
         }
 
-        @keyframes pulse {
-            0 { opacity: 0.8; }
-            50% { opacity: 1; }
-            100% { opacity: 0.8; }
-        }
-
-        .selector-treino {
+        .selector-topo {
             display: flex;
             gap: 5px;
             margin-bottom: 20px;
@@ -105,7 +103,7 @@
             padding-bottom: 5px;
         }
 
-        .btn-dia {
+        .btn-seletor {
             background: var(--card-bg);
             border: 1px solid #2c2c3e;
             color: var(--text-muted);
@@ -118,18 +116,19 @@
             text-align: center;
         }
 
-        .btn-dia.ativo {
+        .btn-seletor.ativo {
             background: var(--accent-color);
             color: white;
             border-color: var(--accent-color);
         }
 
-        .card-exercicio, .card-medida {
+        .card-layout {
             background: var(--card-bg);
             border-radius: 14px;
             padding: 16px;
             margin-bottom: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative;
         }
 
         .card-exercicio.concluido {
@@ -143,7 +142,7 @@
             margin-bottom: 15px;
         }
 
-        .img-placeholder {
+        .img-container-app {
             width: 60px;
             height: 60px;
             background: #2c2c3e;
@@ -153,16 +152,24 @@
             justify-content: center;
             font-size: 22px;
             color: var(--text-muted);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .img-container-app img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .ex-info h3 {
-            font-size: 18px;
+            font-size: 17px;
             margin-bottom: 4px;
         }
 
         .ex-info p {
             color: var(--text-muted);
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .inputs-container {
@@ -175,7 +182,7 @@
             border-radius: 10px;
         }
 
-        .input-carga, .input-medida-val {
+        .input-estilo {
             width: 90px;
             background: var(--bg-color);
             border: 1px solid #444;
@@ -187,10 +194,6 @@
             font-weight: bold;
         }
 
-        .series-counter-box {
-            text-align: center;
-        }
-        
         .series-texto {
             font-size: 18px; 
             font-weight: bold;
@@ -201,7 +204,7 @@
             color: var(--accent-green);
         }
 
-        .btn-done, .btn-salvar-medida {
+        .btn-done, .btn-acao {
             background: var(--accent-green);
             color: white;
             border: none;
@@ -217,28 +220,19 @@
             color: #8e8e93;
         }
 
-        .historico-medidas-box {
-            margin-top: 10px;
-            font-size: 13px;
-            color: var(--text-muted);
-            display: flex;
-            justify-content: space-between;
-            border-top: 1px dashed #3a3a4e;
-            padding-top: 8px;
-        }
-
         .nav-inferior {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 65px;
+            height: 75px;
             background: #16161f;
             border-top: 1px solid #2c2c3e;
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 900;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .nav-item {
@@ -271,6 +265,36 @@
             display: block;
         }
 
+        /* Modal Layer de Dicas Técnicas */
+        .layer-dicas {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 13, 17, 0.98);
+            z-index: 2000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .layer-dicas h2 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .layer-dicas p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #fff;
+        }
+
+        /* Temporizador */
         #timer-modal {
             display: none;
             position: fixed;
@@ -290,7 +314,6 @@
             font-size: 64px;
             font-weight: bold;
             margin-bottom: 20px;
-            font-variant-numeric: tabular-nums;
         }
 
         .progress-container {
@@ -309,24 +332,34 @@
             transition: width 1s linear;
         }
 
-        .btn-skip {
+        /* Foto de Evolução */
+        .preview-foto {
+            width: 100%;
+            height: 200px;
             background: #2c2c3e;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .preview-foto img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Gym Project ⚔️</h1>
+        <h1>Projeto Conan ⚔️</h1>
         <div id="revision-tag" class="revision-badge">Calculando semanas...</div>
     </header>
 
+    <!-- TELA DE TREINOS -->
     <div id="tela-treinos" class="tela ativa">
         <div class="progresso-treino-container">
             <div class="progresso-header">
@@ -338,50 +371,127 @@
             </div>
         </div>
 
-        <div class="selector-treino" id="dia-seletor">
-            <button class="btn-dia" onclick="carregarTreino('A')">SEG (A)</button>
-            <button class="btn-dia" onclick="carregarTreino('D')">TER (D)</button>
-            <button class="btn-dia" onclick="carregarTreino('B')">QUA (B)</button>
-            <button class="btn-dia" onclick="carregarTreino('E')">QUI (E)</button>
-            <button class="btn-dia" onclick="carregarTreino('C')">SEX (C)</button>
+        <div class="selector-topo" id="dia-seletor">
+            <button class="btn-seletor" onclick="carregarTreino('A')">SEG (A)</button>
+            <button class="btn-seletor" onclick="carregarTreino('D')">TER (D)</button>
+            <button class="btn-seletor" onclick="carregarTreino('B')">QUA (B)</button>
+            <button class="btn-seletor" onclick="carregarTreino('E')">QUI (E)</button>
+            <button class="btn-seletor" onclick="carregarTreino('C')">SEX (C)</button>
         </div>
 
         <div id="container-exercicios"></div>
     </div>
 
-    <div id="tela-medidas" class="tela">
-        <h2 style="margin-bottom: 15px; font-size: 20px; text-align: center; color: var(--accent-color);">AVALIAÇÃO DE EFICÁCIA 📐</h2>
-        <p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-bottom: 20px;">Atualize suas medidas semanalmente para validar o ganho de simetria.</p>
-        <div id="container-medidas"></div>
+    <!-- TELA DE DIETA -->
+    <div id="tela-dieta" class="tela">
+        <div class="selector-topo" id="dieta-seletor">
+            <button class="btn-seletor" onclick="carregarDieta('Segunda')">SEG</button>
+            <button class="btn-seletor" onclick="carregarDieta('Terça')">TER</button>
+            <button class="btn-seletor" onclick="carregarDieta('Quarta')">QUA</button>
+            <button class="btn-seletor" onclick="carregarDieta('Quinta')">QUI</button>
+            <button class="btn-seletor" onclick="carregarDieta('Sexta')">SEX</button>
+            <button class="btn-seletor" onclick="carregarDieta('Sábado')">SÁB</button>
+            <button class="btn-seletor" onclick="carregarDieta('Domingo')">DOM</button>
+        </div>
+        
+        <div id="container-dieta"></div>
+
+        <div class="card-layout" style="margin-top: 20px; border: 1px dashed var(--accent-color);">
+            <h4 style="color: var(--accent-color); margin-bottom: 8px;">🚨 REGRAS DA DISPENSA</h4>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">1. <b>Válvula de Escape:</b> Sentiu fome extrema fora do horário? Coma 2 ovos cozidos. Zero impacto na glicemia.</p>
+            <p style="font-size: 13px; color: var(--text-muted);">2. <b>Limite do Leite:</b> Máximo 200ml por dia (de preferência desnatado) para evitar distensão abdominal.</p>
+        </div>
     </div>
 
-    <div id="timer-modal">
-        <h2 style="margin-bottom: 10px; color: var(--text-muted);">DESCANSO</h2>
-        <div id="timer-text">60s</div>
-        <div class="progress-container">
-            <div id="progress-bar"></div>
+    <!-- TELA DE MEDIDAS & EVOLUÇÃO -->
+    <div id="tela-medidas" class="tela">
+        <div id="container-medidas"></div>
+
+        <!-- Seção de Upload de Foto Local -->
+        <div class="card-layout">
+            <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--accent-color);">📸 REGISTRO VISUAL DA SEMANA</h3>
+            <input type="file" accept="image/*" id="input-foto-evolucao" style="display: none;" onchange="salvarFotoEvolucao(this)">
+            <button class="btn-acao" style="width: 100%;" onclick="document.getElementById('input-foto-evolucao').click()">Tirar Foto / Carregar Evolução</button>
+            <div class="preview-foto" id="box-preview-foto">
+                <span style="color: var(--text-muted); font-size: 13px;">Nenhuma foto salva esta semana</span>
+            </div>
         </div>
-        <button class="btn-skip" onclick="pararCronometro()">Pular Descanso</button>
+    </div>
+
+    <!-- LAYER DE DICAS TÉCNICAS (ABRE AO CLICAR NA IMAGEM) -->
+    <div id="layer-dicas" class="layer-dicas" onclick="fecharDicas()">
+        <h2 id="layer-titulo-ex">Supino</h2>
+        <p id="layer-texto-dica">Dica técnica aqui.</p>
+        <span style="color: var(--text-muted); margin-top: 40px; font-size: 13px;">Toque em qualquer lugar para fechar</span>
+    </div>
+
+    <!-- MODAL DO CRONOMETRO -->
+    <div id="timer-modal">
+        <h2 style="margin-bottom: 10px; color: var(--text-muted);">DESCANSO REGULAÇÃO</h2>
+        <div id="timer-text">60s</div>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+        <button class="btn-acao" style="background:#444;" onclick="pararCronometro()">Pular Descanso</button>
     </div>
 
     <nav class="nav-inferior">
         <button id="nav-treino" class="nav-item ativo" onclick="mudarTela('treinos')">
-            <span class="nav-icon">🏋️‍♂️</span>
-            <span>Treino</span>
+            <span class="nav-icon">🏋️‍♂️</span><span>Treino</span>
+        </button>
+        <button id="nav-dieta" class="nav-item" onclick="mudarTela('dieta')">
+            <span class="nav-icon">🍎</span><span>Dieta</span>
         </button>
         <button id="nav-medida" class="nav-item" onclick="mudarTela('medidas')">
-            <span class="nav-icon">📐</span>
-            <span>Medidas</span>
+            <span class="nav-icon">📐</span><span>Medidas</span>
         </button>
     </nav>
 
     <script>
         const bancoTreinos = {
-            'A': { nome: "Treino A - Academia", exercicios: [{ id: "a1", nome: "Supino Inclinado Máquina", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "💪" }, { id: "a2", nome: "Puxada Alta Aberta Pulley", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "🦅" }, { id: "a3", nome: "Elevação Lateral na Polia", seriesTotais: 4, meta: "4s x 12-15 rep", tipo: "📐" }, { id: "a4", nome: "Leg Press 45°", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "🦵" }, { id: "a5", nome: "Tríceps Corda Polia", seriesTotais: 3, meta: "3s x 12 rep", tipo: "💥" }] },
-            'B': { nome: "Treino B - Academia", exercicios: [{ id: "b1", nome: "Fly / Pec Deck Máquina", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "💪" }, { id: "b2", nome: "Remada Baixa Supinada", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "🦅" }, { id: "b3", nome: "Elevação Lateral Halteres", seriesTotais: 4, meta: "4s x 12-15 rep", tipo: "📐" }, { id: "b4", nome: "Cadeira Extensora", seriesTotais: 4, meta: "4s x 12-15 rep", tipo: "🦵" }, { id: "b5", nome: "Rosca Bíceps Barra Polia", seriesTotais: 3, meta: "3s x 12 rep", tipo: "💥" }] },
-            'C': { nome: "Treino C - Academia", exercicios: [{ id: "c1", nome: "Supino Reto Máquina", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "💪" }, { id: "c2", nome: "Puxada Pegada Triângulo", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "🦅" }, { id: "c3", nome: "Crucifixo Invertido Máquina", seriesTotais: 4, meta: "4s x 12-15 rep", tipo: "📐" }, { id: "c4", nome: "Cadeira/Mesa Flexora", seriesTotais: 4, meta: "4s x 12-15 rep", tipo: "🦵" }, { id: "c5", nome: "Tríceps Testa + Rosca Martelo", seriesTotais: 3, meta: "3s x 12 rep", tipo: "💥" }] },
-            'D': { nome: "Treino D - Em Casa", exercicios: [{ id: "d1", nome: "Flexão de Braço no Chão", seriesTotais: 4, meta: "4s x Máximo", tipo: "🏡" }, { id: "d2", nome: "Elevação Pélvica Unilateral", seriesTotais: 4, meta: "4s x 15 rep", tipo: "🍑" }, { id: "d3", nome: "Extensão Lombar Superman", seriesTotais: 4, meta: "4s x 15 rep", tipo: "🦅" }, { id: "d4", nome: "Agachamento Livre (Lento)", seriesTotais: 4, meta: "4s x 20 rep", tipo: "🦵" }, { id: "d5", nome: "Prancha Abdominal", seriesTotais: 3, meta: "3s x 45 seg", tipo: "🛡️" }] },
-            'E': { nome: "Treino E - Em Casa", exercicios: [{ id: "e1", nome: "Flexão Pegada Aberta", seriesTotais: 4, meta: "4s x Máximo", tipo: "🏡" }, { id: "e2", nome: "Agachamento Búlgaro", seriesTotais: 4, meta: "4s x 12 rep", tipo: "🍑" }, { id: "e3", nome: "Remada Isometria (5s)", seriesTotais: 4, meta: "4s x 12 rep", tipo: "🦅" }, { id: "e4", nome: "Coice Glúteo 4 Apoios", seriesTotais: 4, meta: "4s x 15 rep", tipo: "🍑" }, { id: "e5", nome: "Abdominal Infra", seriesTotais: 3, meta: "3s x 15-20 rep", tipo: "🛡️" }] }
+            'A': { nome: "Treino A", exercicios: [
+                { id: "a1", nome: "Supino Inclinado Máquina", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "💪", img: "/exercicios/supino_inc.gif", dica: "Mantenha as escápulas travadas no banco. Não empurre os ombros para a frente no final do movimento; mantenha a tensão no peito." },
+                { id: "a2", nome: "Puxada Alta Aberta Pulley", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "🦅", img: "/exercicios/puxada.gif", dica: "Puxe direcionando os cotovelos para os seus bolsos traseiros, não para os lados. Contraia as costas antes de mexer os braços." },
+                { id: "a3", nome: "Elevação Lateral na Polia", seriesTotais: 4, meta: "4s x 12-15 rep", tipo: "📐", img: "/exercicios/elev_polia.gif", dica: "Pense em empurrar a mão para longe do corpo, e não para cima. Pare a descida antes de perder a tensão do cabo." },
+                { id: "a4", nome: "Leg Press 45°", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "Leg", img: "/exercicios/leg.gif", dica: "Apoie os pés inteiros na plataforma e empurre a carga exercendo força pelo calcanhar, nunca pela ponta do pé. Isso ativa os glúteos e protege os joelhos." },
+                { id: "a5", nome: "Tríceps Corda Polia", seriesTotais: 3, meta: "3s x 12 rep", tipo: "💥", img: "/exercicios/corda.gif", dica: "No final do movimento, afaste as pontas da corda tentando 'rasgar' a corda para fora para contrair a cabeça lateral do tríceps." }
+            ]},
+            'B': { nome: "Treino B", exercicios: [
+                { id: "b1", nome: "Fly / Pec Deck Máquina", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "💪", img: "/exercicios/fly.gif", dica: "Mantenha uma leve flexão nos cotovelos e imagine que está abraçando uma árvore gigante. Aperte os bíceps um contra o outro no final." },
+                { id: "b2", nome: "Remada Baixa Supinada", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "🦅", img: "/exercicios/remada_baixa.gif", dica: "Puxe a barra em direção ao umbigo. No ponto final, esmague as costas como se tentasse segurar uma caneta entre as escápulas." },
+                { id: "b3", nome: "Elevação Lateral Halteres", seriesTotais: 4, meta: "4s x 12-15 rep", tipo: "📐", img: "/exercicios/elev_haltere.gif", dica: "Mantenha os polegares levemente apontados para baixo ou neutros. Não suba os halteres acima da linha dos olhos." },
+                { id: "b4", nome: "Cadeira Extensora", seriesTotais: 4, meta: "4s x 12-15 rep", tipo: "🦵", img: "/exercicios/extensora.gif", dica: "Mantenha o quadril firmemente preso ao banco. No topo do movimento, contraia as coxas por 1 segundo antes de descer devagar." },
+                { id: "b5", nome: "Rosca Bíceps Barra Polia", seriesTotais: 3, meta: "3s x 12 rep", tipo: "💥", img: "/exercicios/rosca_polia.gif", dica: "Mantenha os cotovelos colados fixos ao lado do corpo. Não deixe os ombros irem para a frente para 'roubar' o peso." }
+            ]},
+            'C': { nome: "Treino C", exercicios: [
+                { id: "c1", nome: "Supino Reto Máquina", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "💪", img: "/exercicios/supino_reto.gif", dica: "Controle a descida em 3 segundos. Não encoste os pesos da máquina na volta para manter o peito sob tensão constante." },
+                { id: "c2", nome: "Puxada Pegada Triângulo", seriesTotais: 4, meta: "4s x 10-12 rep", tipo: "🦅", img: "/exercicios/triangulo.gif", dica: "Incline o tronco levemente para trás e puxe o triângulo em direção à parte inferior do peito, esmagando a porção dorsal baixa." },
+                { id: "c3", nome: "Crucifixo Invertido Máquina", seriesTotais: 4, meta: "4s x 12-15 rep", tipo: "📐", img: "/exercicios/crucifixo_inv.gif", dica: "Foco total nos ombros posteriores e trapézio. Evite encolher os ombros em direção às orelhas durante a execução." },
+                { id: "c4", nome: "Cadeira/Mesa Flexora", seriesTotais: 4, meta: "4s x 12-15 rep", tipo: "🦵", img: "/exercicios/flexora.gif", dica: "Faça força para manter o quadril colado no estofado. Flexione as pernas de forma explosiva e retorne controlando o peso." },
+                { id: "c5", nome: "Tríceps Testa + Rosca Martelo", seriesTotais: 3, meta: "3s x 12 rep", tipo: "💥", img: "/exercicios/testa_martelo.gif", dica: "No Testa, mantenha os cotovelos apontados para o teto. No Martelo, aperte os halteres com força para maximizar o antebraço." }
+            ]},
+            'D': { nome: "Treino D (Casa)", exercicios: [
+                { id: "d1", nome: "Flexão de Braço no Chão", seriesTotais: 4, meta: "4s x Máximo", tipo: "🏡", img: "/exercicios/flexao.gif", dica: "Mantenha o corpo alinhado como uma prancha rígida. Os cotovelos devem descer formando um ângulo de 45° com o corpo." },
+                { id: "d2", nome: "Elevação Pélvica Unilateral", seriesTotais: 4, meta: "4s x 15 rep", tipo: "🍑", img: "/exercicios/pelvica.gif", dica: "Empurre o chão com o calcanhar da perna ativa. No topo, contraia o glúteo ao máximo e segure por 1 segundo." },
+                { id: "d3", nome: "Extensão Lombar Superman", seriesTotais: 4, meta: "4s x 15 rep", tipo: "🦅", img: "/exercicios/superman.gif", dica: "Movimento controlado. Tire os braços e coxas do chão usando a força da região lombar e glúteos." },
+                { id: "d4", nome: "Agachamento Livre (Lento)", seriesTotais: 4, meta: "4s x 20 rep", tipo: "🦵", img: "/exercicios/agachamento.gif", dica: "Desça em 4 segundos controlados até passar da linha dos joelhos. Empurre o chão para subir mantendo a postura ereta." },
+                { id: "d5", nome: "Prancha Abdominal", seriesTotais: 3, meta: "3s x 45 seg", tipo: "🛡️", img: "/exercicios/prancha.gif", dica: "Mantenha o abdômen e os glúteos contraídos. Respire continuamente (sem prender o ar) para manter a pressão estável." }
+            ]},
+            'E': { nome: "Treino E (Casa)", exercicios: [
+                { id: "e1", nome: "Flexão Pegada Aberta", seriesTotais: 4, meta: "4s x Máximo", tipo: "🏡", img: "/exercicios/flexao_aberta.gif", dica: "Mãos posicionadas além da linha dos ombros. Foque na amplitude do movimento, alongando bem o peitoral." },
+                { id: "e2", nome: "Agachamento Búlgaro", seriesTotais: 4, meta: "4s x 12 rep", tipo: "🍑", img: "/exercicios/bulgaro.gif", dica: "O pé de trás serve apenas para equilíbrio. Coloque 90% do seu peso na perna da frente e concentre a força no calcanhar." },
+                { id: "e3", nome: "Remada Isometria (5s)", seriesTotais: 4, meta: "4s x 12 rep", tipo: "🦅", img: "/exercicios/remada_iso.gif", dica: "Ao puxar, trave os cotovelos atrás e esmague as costas com força total por 5 segundos antes de relaxar controlado." },
+                { id: "e4", nome: "Coice Glúteo 4 Apoios", seriesTotais: 4, meta: "4s x 15 rep", tipo: "🍑", img: "/exercicios/coice.gif", dica: "Estenda a perna para trás e para cima sem hiperestender a coluna. O movimento nasce exclusivamente no glúteo." },
+                { id: "e5", nome: "Abdominal Infra", seriesTotais: 3, meta: "3s x 15-20 rep", tipo: "🛡️", img: "/exercicios/infra.gif", dica: "Mãos sob o quadril para proteger a lombar. Puxe os joelhos em direção ao peito tirando levemente o quadril do chão na subida." }
+            ]}
+        };
+
+        const frutasProgramacao = {
+            'Segunda': { f1: 'Banana', f2: 'Maçã' },
+            'Terça': { f1: 'Mexerica', f2: 'Banana' },
+            'Quarta': { f1: 'Banana', f2: 'Mexerica' },
+            'Quinta': { f1: 'Maçã', f2: 'Mexerica' },
+            'Sexta': { f1: 'Banana', f2: 'Maçã' },
+            'Sábado': { f1: 'Mexerica', f2: 'Maçã' },
+            'Domingo': { f1: 'Banana', f2: 'Mexerica' }
         };
 
         const listaMedidasBase = [
@@ -389,38 +499,21 @@
             { id: "torax", nome: "Tórax / Peito", icone: "🛡️" },
             { id: "cintura", nome: "Cintura (Abdômen)", icone: "⏳" },
             { id: "gluteos", nome: "Glúteos", icone: "🍑" },
-            { id: "braço_dir", nome: "Braço Direito", icone: "💪" },
-            { id: "braço_esq", nome: "Braço Esquerdo", icone: "💪" }
+            { id: "braco_dir", nome: "Braço Direito", icone: "💪" },
+            { id: "braco_esq", nome: "Braço Esquerdo", icone: "💪" }
         ];
 
         let tempoRestante;
         let intervaloCronometro;
-        const TEMPO_DESCANSO = 60;
         let treinoAtualAtivo = '';
         let progressoSeries = {};
 
         window.onload = function() {
-            limparMemoriaSeNovoDia();
             gerenciarDatas();
             abrirDiaAtual();
             renderizarPainelMedidas();
+            carregarFotoEvolucaoSalva();
         };
-
-        // VALIDAÇÃO DE DATA: Zera as séries se mudou o dia do calendário
-        function limparMemoriaSeNovoDia() {
-            const hojeKey = new Date().toDateString(); // Retorna ex: "Wed Jun 17 2026"
-            const ultimaDataTreino = localStorage.getItem('conan_ultima_data_treino');
-
-            if (ultimaDataTreino !== hojeKey) {
-                // É um novo dia de treino, limpa apenas os contadores de séries antigas
-                for (let key in localStorage) {
-                    if (key.startsWith('conan_series_feitas_')) {
-                        localStorage.removeItem(key);
-                    }
-                }
-                localStorage.setItem('conan_ultima_data_treino', hojeKey);
-            }
-        }
 
         function mudarTela(telaAlvo) {
             document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
@@ -429,10 +522,15 @@
             if (telaAlvo === 'treinos') {
                 document.getElementById('tela-treinos').classList.add('ativa');
                 document.getElementById('nav-treino').classList.add('ativo');
+            } else if (telaAlvo === 'dieta') {
+                document.getElementById('tela-dieta').classList.add('ativa');
+                document.getElementById('nav-dieta').classList.add('ativo');
+                const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+                const hojeNome = dias[new Date().getDay()];
+                carregarDieta(hojeNome);
             } else {
                 document.getElementById('tela-medidas').classList.add('ativa');
                 document.getElementById('nav-medida').classList.add('ativo');
-                renderizarPainelMedidas();
             }
         }
 
@@ -455,53 +553,52 @@
 
         function abrirDiaAtual() {
             const diaSemana = new Date().getDay();
-            let treinoParaAbrir = 'A';
-            if (diaSemana === 2) treinoParaAbrir = 'D';
-            if (diaSemana === 3) treinoParaAbrir = 'B';
-            if (diaSemana === 4) treinoParaAbrir = 'E';
-            if (diaSemana === 5) treinoParaAbrir = 'C';
-            carregarTreino(treinoParaAbrir);
+            let t = 'A';
+            if (diaSemana === 2) t = 'D';
+            if (diaSemana === 3) t = 'B';
+            if (diaSemana === 4) t = 'E';
+            if (diaSemana === 5) t = 'C';
+            carregarTreino(t);
         }
 
         function carregarTreino(letraTreino) {
             treinoAtualAtivo = letraTreino;
             progressoSeries = {};
-            const botoes = document.querySelectorAll('.btn-dia');
+            const botoes = document.getElementById('dia-seletor').querySelectorAll('.btn-seletor');
             botoes.forEach(b => b.classList.remove('ativo'));
-            const indexMapeamento = { 'A':0, 'D':1, 'B':2, 'E':3, 'C':4 };
-            if(botoes[indexMapeamento[letraTreino]]) botoes[indexMapeamento[letraTreino]].classList.add('ativo');
+            const mapeamento = { 'A':0, 'D':1, 'B':2, 'E':3, 'C':4 };
+            botoes[mapeamento[letraTreino]].classList.add('ativo');
 
             const container = document.getElementById('container-exercicios');
             container.innerHTML = "";
 
             bancoTreinos[letraTreino].exercicios.forEach(ex => {
-                // Puxa as séries persistidas do banco para evitar o reset por bloqueio de tela
                 const seriesSalvas = parseInt(localStorage.getItem(`conan_series_feitas_${ex.id}`)) || 0;
                 progressoSeries[ex.id] = seriesSalvas;
-
                 const cargaSalva = localStorage.getItem(`conan_carga_${ex.id}`) || "";
-                const card = document.createElement('div');
-                card.className = 'card-exercicio';
-                card.id = `card-${ex.id}`;
                 
-                const estaConcluido = seriesSalvas === ex.seriesTotais;
-                if (estaConcluido) card.classList.add('concluido');
+                const card = document.createElement('div');
+                card.className = 'card-layout card-exercicio';
+                card.id = `card-${ex.id}`;
+                if (seriesSalvas === ex.seriesTotais) card.classList.add('concluido');
 
                 card.innerHTML = `
                     <div class="card-header">
-                        <div class="img-placeholder">${ex.tipo}</div>
+                        <div class="img-container-app" onclick="mostrarDicas('${ex.nome}', '${ex.dica}')">
+                            <img src="${ex.img}" onerror="this.src=''; this.parentElement.innerText='${ex.tipo}'">
+                        </div>
                         <div class="ex-info"><h3>${ex.nome}</h3><p>${ex.meta}</p></div>
                     </div>
                     <div class="inputs-container">
                         <div>
                             <span style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:4px;">CARGA (KG):</span>
-                            <input type="text" inputmode="decimal" id="input-${ex.id}" class="input-carga" placeholder="--" value="${cargaSalva}" onchange="localStorage.setItem('conan_carga_${ex.id}', this.value)">
+                            <input type="text" inputmode="decimal" class="input-estilo" placeholder="--" value="${cargaSalva}" onchange="localStorage.setItem('conan_carga_${ex.id}', this.value)">
                         </div>
-                        <div class="series-counter-box">
+                        <div style="text-align:center;">
                             <span style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:2px;">SÉRIES:</span>
-                            <span id="cont-text-${ex.id}" class="series-texto ${estaConcluido ? 'tudo-feito' : ''}">${seriesSalvas} / ${ex.seriesTotais}</span>
+                            <span id="cont-text-${ex.id}" class="series-texto ${seriesSalvas === ex.seriesTotais ? 'tudo-feito' : ''}">${seriesSalvas} / ${ex.seriesTotais}</span>
                         </div>
-                        <button id="btn-done-${ex.id}" class="btn-done" ${estaConcluido ? 'disabled' : ''} onclick="executarSerie('${ex.id}', ${ex.seriesTotais})">${estaConcluido ? 'OK' : 'Série Feita'}</button>
+                        <button id="btn-done-${ex.id}" class="btn-done" ${seriesSalvas === ex.seriesTotais ? 'disabled' : ''} onclick="executarSerie('${ex.id}', ${ex.seriesTotais})">${seriesSalvas === ex.seriesTotais ? 'OK' : 'Série'}</button>
                     </div>`;
                 container.appendChild(card);
             });
@@ -511,15 +608,12 @@
         function executarSerie(exId, maxSeries) {
             if (progressoSeries[exId] < maxSeries) {
                 progressoSeries[exId]++;
-                
-                // Persiste imediatamente a série executada no LocalStorage do iOS
                 localStorage.setItem(`conan_series_feitas_${exId}`, progressoSeries[exId]);
-
-                const textoContador = document.getElementById(`cont-text-${exId}`);
-                textoContador.innerText = `${progressoSeries[exId]} / ${maxSeries}`;
+                const txt = document.getElementById(`cont-text-${exId}`);
+                txt.innerText = `${progressoSeries[exId]} / ${maxSeries}`;
                 
                 if (progressoSeries[exId] === maxSeries) {
-                    textoContador.classList.add('tudo-feito');
+                    txt.classList.add('tudo-feito');
                     document.getElementById(`card-${exId}`).classList.add('concluido');
                     document.getElementById(`btn-done-${exId}`).disabled = true;
                     document.getElementById(`btn-done-${exId}`).innerText = "OK";
@@ -540,82 +634,153 @@
             document.getElementById('barra-progresso-preenchimento').style.width = `${pct}%`;
         }
 
+        function mostrarDicas(nome, dica) {
+            document.getElementById('layer-titulo-ex').innerText = nome;
+            document.getElementById('layer-texto-dica').innerText = dica;
+            document.getElementById('layer-dicas').style.display = 'flex';
+        }
+
+        function fecharDicas() {
+            document.getElementById('layer-dicas').style.display = 'none';
+        }
+
+        function iniciarCronometro() {
+            tempoRestante = 60;
+            document.getElementById('timer-modal').style.display = 'flex';
+            document.getElementById('timer-text').innerText = `60s`;
+            document.getElementById('progress-bar').style.width = '100%';
+            
+            clearInterval(intervaloCronometro);
+            intervaloCronometro = setInterval(() => {
+                tempoRestante--;
+                document.getElementById('timer-text').innerText = `${tempoRestante}s`;
+                document.getElementById('progress-bar').style.width = `${(tempoRestante / 60) * 100}%`;
+                if (tempoRestante <= 0) pararCronometro();
+            }, 1000);
+        }
+
+        function pararCronometro() {
+            clearInterval(intervaloCronometro);
+            document.getElementById('timer-modal').style.display = 'none';
+        }
+
+        function carregarDieta(diaNome) {
+            const btns = document.getElementById('dieta-seletor').querySelectorAll('.btn-seletor');
+            const listaDias = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+            btns.forEach((b, idx) => {
+                b.classList.remove('ativo');
+                if(listaDias[idx] === diaNome) b.classList.add('ativo');
+            });
+
+            const frutas = frutasProgramacao[diaNome] || { f1: 'Banana', f2: 'Maçã' };
+            const container = document.getElementById('container-dieta');
+            container.innerHTML = `
+                <h2 style="font-size:18px; margin-bottom:15px; color:var(--accent-color); text-align:center;">CRONOGRAMA DE NUTRIÇÃO - ${diaNome.toUpperCase()}</h2>
+                
+                <div class="card-layout">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b style="color:var(--accent-color)">05:45</b> <span>⚡ PRÉ-TREINO</span></div>
+                    <p style="font-size:14px;">500ml de Água Mineral + Café preto puro (opcional).</p>
+                    <small style="color:var(--text-muted)">Foco: Hidratação em Jejum. Não faça apneia!</small>
+                </div>
+
+                <div class="card-layout">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b style="color:var(--accent-color)">08:00</b> <span>🍳 CAFÉ DA MANHÃ (FIM DO JEJUM)</span></div>
+                    <p style="font-size:14px; font-weight:bold;">3 a 4 Ovos mexidos/cozidos + 1 Fruta (${frutas.f1}).</p>
+                    <div style="margin-top:8px; font-size:12px; color:var(--accent-green)">
+                        💊 Maca Peruana (3g a 5g) + Vitamina D (Absorção com a gema)
+                    </div>
+                </div>
+
+                <div class="card-layout">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b style="color:var(--accent-color)">12:00</b> <span>🍗 ALMOÇO ANABÓLICO</span></div>
+                    <p style="font-size:14px;">150g Frango/Carne + 150g Batata ou Mandioca + Brócolis à vontade + 1 concha de Feijão (só grãos).</p>
+                    <div style="margin-top:8px; font-size:12px; color:var(--accent-green)">
+                        💊 Creatina (Obrigatório) + Ômega 3
+                    </div>
+                </div>
+
+                <div class="card-layout">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b style="color:var(--accent-color)">15:00</b> <span>🥑 LANCHE MODULADOR</span></div>
+                    <p style="font-size:14px;">Iogurte Grego + 1 colher de Chia + Fruta (${frutas.f2}).</p>
+                    <p style="font-size:14px; color:#ffcc00; font-weight:bold; margin-top:4px;">🎯 Comer 1/4 de Abacate Inteiro (Gordura para Testosterona).</p>
+                </div>
+
+                <div class="card-layout">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><b style="color:var(--accent-color)">17:45</b> <span>🥩 JANTAR (FECHAMENTO DA JANELA)</span></div>
+                    <p style="font-size:14px;">150g Frango/Carne + 3 Ovos + Salada de Folhas Verdes.</p>
+                    <small style="color:var(--accent-color); font-weight:bold;">⚠️ Terminar estritamente antes das 18h00 para iniciar as 14h de jejum.</small>
+                </div>
+            `;
+        }
+
         function renderizarPainelMedidas() {
             const container = document.getElementById('container-medidas');
-            container.innerHTML = "";
+            container.innerHTML = '<h2 style="margin-bottom:15px; font-size:18px; text-align:center; color:var(--accent-color);">AVALIAÇÃO DE SIMETRIA 📐</h2>';
 
             listaMedidasBase.forEach(med => {
-                const atualSalva = localStorage.getItem(`conan_medida_atual_${med.id}`) || "";
-                const anteriorSalva = localStorage.getItem(`conan_medida_ant_${med.id}`) || "--";
+                const atual = localStorage.getItem(`conan_medida_atual_${med.id}`) || "";
+                const ant = localStorage.getItem(`conan_medida_ant_${med.id}`) || "--";
+                let badge = "";
 
-                let feedbackEficacia = "";
-                if (atualSalva && anteriorSalva !== "--") {
-                    const diff = (parseFloat(atualSalva) - parseFloat(anteriorSalva)).toFixed(1);
-                    if (diff > 0) {
-                        feedbackEficacia = `<span style="color:var(--accent-green)">📈 +${diff} cm</span>`;
-                    } else if (diff < 0) {
-                        const cor = (med.id === "cintura") ? "var(--accent-green)" : "var(--accent-color)";
-                        feedbackEficacia = `<span style="color:${cor}">📉 ${diff} cm</span>`;
-                    } else {
-                        feedbackEficacia = `<span style="color:var(--text-muted)">= Estável</span>`;
-                    }
+                if (atual && ant !== "--") {
+                    const diff = (parseFloat(atual) - parseFloat(ant)).toFixed(1);
+                    if (diff > 0) badge = `<span style="color:var(--accent-green)">📈 +${diff} cm</span>`;
+                    else if (diff < 0) badge = `<span style="color:${med.id==='cintura'?'var(--accent-green)':'var(--accent-color)'}">📉 ${diff} cm</span>`;
+                    else badge = `<span style="color:var(--text-muted)">= Estável</span>`;
                 }
 
                 const card = document.createElement('div');
-                card.className = 'card-medida';
+                card.className = 'card-layout';
                 card.innerHTML = `
-                    <div class="card-header" style="margin-bottom: 10px;">
-                        <div class="img-placeholder" style="width:45px; height:45px; font-size:18px;">${med.icone}</div>
-                        <div class="ex-info"><h3>${med.nome}</h3></div>
+                    <div class="card-header" style="margin-bottom:10px;">
+                        <div class="img-container-app" style="width:40px; height:40px; font-size:16px;">${med.icone}</div>
+                        <h3>${med.nome}</h3>
                     </div>
                     <div class="inputs-container">
-                        <div>
-                            <span style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:4px;">ATUAL (CM):</span>
-                            <input type="text" inputmode="decimal" id="med-${med.id}" class="input-medida-val" placeholder="00.0" value="${atualSalva}">
-                        </div>
-                        <button class="btn-salvar-medida" onclick="salvarMedida('${med.id}')">Salvar</button>
+                        <input type="text" inputmode="decimal" id="med-${med.id}" class="input-estilo" placeholder="00.0" value="${atual}">
+                        <button class="btn-acao" onclick="salvarMedida('${med.id}')">Salvar</button>
                     </div>
-                    <div class="historico-medidas-box">
-                        <span>Anterior: <b>${anteriorSalva} cm</b></span>
-                        <span>Eficácia: ${feedbackEficacia || "Sem histórico"}</span>
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-top:8px; color:var(--text-muted);">
+                        <span>Anterior: <b>${ant} cm</b></span><span>Eficácia: ${badge || "Sem dados"}</span>
                     </div>`;
                 container.appendChild(card);
             });
         }
 
-        function salvarMedida(idMedida) {
-            const inputVal = document.getElementById(`med-${idMedida}`).value;
-            if (inputVal) {
-                const valorAtualAntigo = localStorage.getItem(`conan_medida_atual_${idMedida}`);
-                if (valorAtualAntigo && valorAtualAntigo !== inputVal) {
-                    localStorage.setItem(`conan_medida_ant_${idMedida}`, valorAtualAntigo);
-                }
-                localStorage.setItem(`conan_medida_atual_${idMedida}`, inputVal);
-                alert("Medida atualizada!");
+        function salvarMedida(id) {
+            const val = document.getElementById(`med-${id}`).value;
+            if(val) {
+                const anterior = localStorage.getItem(`conan_medida_atual_${id}`);
+                if(anterior && anterior !== val) localStorage.setItem(`conan_medida_ant_${id}`, anterior);
+                localStorage.setItem(`conan_medida_atual_${id}`, val);
+                alert("Medida salva!");
                 renderizarPainelMedidas();
             }
         }
 
-        function iniciarCronometro() {
-            tempoRestante = TEMPO_DESCANSO;
-            document.getElementById('timer-modal').style.display = 'flex';
-            atualizarTelaCronometro();
-            intervaloCronometro = setInterval(() => {
-                tempoRestante--;
-                atualizarTelaCronometro();
-                if (tempoRestante <= 0) {
-                    pararCronometro();
-                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                }
-            }, 1000);
+        function salvarFotoEvolucao(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Data = e.target.result;
+                    try {
+                        localStorage.setItem('conan_foto_semana', base64Data);
+                        mostrarFoto(base64Data);
+                    } catch (error) {
+                        alert("A imagem ficou muito pesada para a memória local. Tente tirar a foto com uma resolução menor!");
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
-        function atualizarTelaCronometro() {
-            document.getElementById('timer-text').innerText = `${tempoRestante}s`;
-            document.getElementById('progress-bar').style.width = `${(tempoRestante / TEMPO_DESCANSO) * 100}%`;
+
+        function carregarFotoEvolucaoSalva() {
+            const foto = localStorage.getItem('conan_foto_semana');
+            if(foto) mostrarFoto(foto);
         }
-        function pararCronometro() {
-            clearInterval(intervaloCronometro);
-            document.getElementById('timer-modal').style.display = 'none';
+
+        function mostrarFoto(base64) {
+            document.getElementById('box-preview-foto').innerHTML = `<img src="${base64}">`;
         }
     </script>
 </body>
