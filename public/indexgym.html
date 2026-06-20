@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Projeto Conan</title>
+    
+    <!-- Configurações PWA prontas para Tela de Início do iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Conan">
+    
+    <!-- Vinculação do arquivo de estilos externo -->
+    <link rel="stylesheet" href="stylegym.css">
+</head>
+<body>
+
+    <header>
+        <h1>Projeto Conan ⚔️</h1>
+        <div id="revision-tag" class="revision-badge">Calculando semanas...</div>
+    </header>
+
+    <!-- TELA DE TREINOS -->
+    <div id="tela-treinos" class="tela ativa">
+        <div class="progresso-treino-container">
+            <div class="progresso-header">
+                <span>COMPLETUDE DO TREINO</span>
+                <span id="percentual-texto">0%</span>
+            </div>
+            <div class="barra-progresso-total">
+                <div id="barra-progresso-preenchimento"></div>
+            </div>
+        </div>
+
+        <div class="selector-topo" id="dia-seletor">
+            <button class="btn-seletor" onclick="carregarTreino('A')">SEG (A)</button>
+            <button class="btn-seletor" onclick="carregarTreino('D')">TER (D)</button>
+            <button class="btn-seletor" onclick="carregarTreino('B')">QUA (B)</button>
+            <button class="btn-seletor" onclick="carregarTreino('E')">QUI (E)</button>
+            <button class="btn-seletor" onclick="carregarTreino('C')">SEX (C)</button>
+        </div>
+
+        <div id="container-exercicios"></div>
+    </div>
+
+    <!-- TELA DE DIETA -->
+    <div id="tela-dieta" class="tela">
+        <div class="selector-topo" id="dieta-seletor">
+            <button class="btn-seletor" onclick="carregarDieta('Segunda')">SEG</button>
+            <button class="btn-seletor" onclick="carregarDieta('Terça')">TER</button>
+            <button class="btn-seletor" onclick="carregarDieta('Quarta')">QUA</button>
+            <button class="btn-seletor" onclick="carregarDieta('Quinta')">QUI</button>
+            <button class="btn-seletor" onclick="carregarDieta('Sexta')">SEX</button>
+            <button class="btn-seletor" onclick="carregarDieta('Sábado')">SÁB</button>
+            <button class="btn-seletor" onclick="carregarDieta('Domingo')">DOM</button>
+        </div>
+        
+        <div id="container-dieta"></div>
+
+        <div class="card-layout" style="margin-top: 20px; border: 1px dashed var(--accent-color);">
+            <h4 style="color: var(--accent-color); margin-bottom: 8px;">🚨 REGRAS DA DISPENSA</h4>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">1. <b>Válvula de Escape:</b> Sentiu fome extrema fora do horário? Coma 2 ovos cozidos. Zero impacto na glice[...]
+            <p style="font-size: 13px; color: var(--text-muted);">2. <b>Limite do Leite:</b> Máximo 200ml por dia (de preferência desnatado) para evitar distensão abdominal.</p>
+        </div>
+    </div>
+
+    <!-- TELA DE MEDIDAS & EVOLUÇÃO -->
+    <div id="tela-medidas" class="tela">
+        <div id="container-medidas"></div>
+
+        <!-- Registro de Evolução Visual Dinâmico -->
+        <div class="card-layout">
+            <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--accent-color);">📸 REGISTRO VISUAL / EVOLUÇÃO</h3>
+            <input type="file" accept="image/*" id="input-foto-evolucao" style="display: none;" onchange="processarFotoEvolucao(this)">
+            <button class="btn-acao" style="width: 100%; background: var(--accent-color);" onclick="document.getElementById('input-foto-evolucao').click()">Adicionar Nova Foto ao Registro</button>
+            
+            <div class="galeria-fotos" id="container-galeria-fotos">
+                <!-- Injetado dinamicamente -->
+            </div>
+        </div>
+
+        <div class="evolution-container">
+            <button id="btnAnimarEvolucao" class="btn-conan">Animar Evolução da Semana</button>
+            <div id="evolutionStage" class="evolution-stage">
+                <!-- As fotos serão carregadas aqui dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DO VISUALIZADOR DE FOTO -->
+    <div id="visualizador-modal" class="visualizador-modal">
+        <img id="img-modal-zoom" src="" alt="Evolução">
+        <div class="visualizador-meta">
+            <span id="data-modal-zoom">--/--/----</span>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn-acao" style="background: #444;" onclick="fecharVisualizador()">Voltar</button>
+                <button class="btn-acao" style="background: var(--accent-color);" id="btn-deletar-foto">Remover</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LAYER DE DICAS TÉCNICAS -->
+    <div id="layer-dicas" class="layer-dicas" onclick="fecharDicas()">
+        <h2 id="layer-titulo-ex">Supino</h2>
+        <p id="layer-texto-dica">Dica técnica aqui.</p>
+        <span style="color: var(--text-muted); margin-top: 40px; font-size: 13px;">Toque em qualquer lugar para fechar</span>
+    </div>
+
+    <!-- MODAL DO CRONOMETRO -->
+    <div id="timer-modal">
+        <h2 style="margin-bottom: 10px; color: var(--text-muted);">DESCANSO REGULAÇÃO</h2>
+        <div id="timer-text">60s</div>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+        <button class="btn-acao" style="background:#444;" onclick="pararCronometro()">Pular Descanso</button>
+    </div>
+
+    <!-- NAVEGAÇÃO INFERIOR -->
+    <nav class="nav-inferior">
+        <button id="nav-treino" class="nav-item ativo" onclick="mudarTela('treinos')">
+            <span class="nav-icon">🏋️‍♂️</span><span>Treino</span>
+        </button>
+        <button id="nav-dieta" class="nav-item" onclick="mudarTela('dieta')">
+            <span class="nav-icon">🍎</span><span>Dieta</span>
+        </button>
+        <button id="nav-medida" class="nav-item" onclick="mudarTela('medidas')">
+            <span class="nav-icon">📐</span><span>Medidas</span>
+        </button>
+    </nav>
+
+    <!-- Scripts de Engenharia e Inicialização do Service Worker -->
+    <script src="appgym.js"></script>
+    <script>
+        // Registra o Service Worker para garantir funcionamento 100% Offline no iOS
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker ativo para o Projeto Conan!', reg.scope))
+                    .catch(err => console.error('Falha ao registrar o Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+</html>
