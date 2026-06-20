@@ -53,7 +53,7 @@
             { id: "cintura", nome: "Cintura (Abdômen)", icone: "⏳" },
             { id: "gluteos", nome: "Glúteos", icone: "🍑" },
             { id: "braco_dir", nome: "Braço Direito", icone: "💪🏼" },
-            { id: "braco_esq", nome: "Braço Esquerdo", icone: "💪🏼" }
+            { id: "braco_esq", nome: "Braço Esquerdo", icone: "💪🏼" },
             { id: "coxa_dir", nome: "Coxa Direita", icone: "🦵🏼" },
             { id: "Coxa_esq", nome: "Coxa Esquerda", icone: "🦵🏼" }
         ];
