@@ -442,7 +442,7 @@ function iniciarAnimacaoEvolutiva() {
                     if (index === totalFotos - 1) return; 
                     
                     // Altera a opacidade para 95% transparente (sobrando 5% de 'fantasma')
-                    imagensRenderizadas[index].style.opacity = "0.05";
+                    imagensRenderizadas[index].style.opacity = "0.10";
                     
                     // Espera os 3 segundos da transição CSS acabar para rodar a próxima foto
                     setTimeout(() => {
