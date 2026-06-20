@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Projeto Conan</title>
     
+    <!-- Configurações PWA prontas para Tela de Início do iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Conan">
     
-    <style>
-    //— Conteúdo style —//
-    </style>
+    <!-- Vinculação do arquivo de estilos externo -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -79,13 +79,12 @@
             </div>
         </div>
 
-<div class="evolution-container">
-    <button id="btnAnimarEvolucao" class="btn-conan">Animar Evolução da Semana</button>
-    <div id="evolutionStage" class="evolution-stage">
-        <!-- As fotos serão carregadas aqui dinamicamente -->
-    </div>
-</div>
-
+        <div class="evolution-container">
+            <button id="btnAnimarEvolucao" class="btn-conan">Animar Evolução da Semana</button>
+            <div id="evolutionStage" class="evolution-stage">
+                <!-- As fotos serão carregadas aqui dinamicamente -->
+            </div>
+        </div>
     </div>
 
     <!-- MODAL DO VISUALIZADOR DE FOTO -->
@@ -115,6 +114,7 @@
         <button class="btn-acao" style="background:#444;" onclick="pararCronometro()">Pular Descanso</button>
     </div>
 
+    <!-- NAVEGAÇÃO INFERIOR -->
     <nav class="nav-inferior">
         <button id="nav-treino" class="nav-item ativo" onclick="mudarTela('treinos')">
             <span class="nav-icon">🏋️‍♂️</span><span>Treino</span>
@@ -127,22 +127,17 @@
         </button>
     </nav>
 
+    <!-- Scripts de Engenharia e Inicialização do Service Worker -->
+    <script src="app.js"></script>
     <script>
-//—  conteúdo script—//
+        // Registra o Service Worker para garantir funcionamento 100% Offline no iOS
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker ativo para o Projeto Conan!', reg.scope))
+                    .catch(err => console.error('Falha ao registrar o Service Worker:', err));
+            });
+        }
     </script>
-
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-.
