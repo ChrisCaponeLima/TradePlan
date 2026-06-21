@@ -1,41 +1,153 @@
-import { put, get } from '@vercel/blob';
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Minha Dieta Diária</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #000000; color: #ffffff; padding-bottom: 80px; }
+        header { background-color: #1c1c1e; padding: 20px 15px; text-align: center; border-bottom: 1px solid #2c2c2e; position: fixed; top: 0; width: 100%; z-index: 10; }
+        header h1 { font-size: 1.2rem; font-weight: 700; color: #30d158; }
+        header span { font-size: 0.85rem; color: #8e8e93; display: block; margin-top: 2px; }
+        .conteudo { padding: 20px; margin-top: 70px; display: none; }
+        .conteudo.active { display: block; }
+        
+        /* Cards de Refeição Premium */
+        .card-refeicao { background-color: #1c1c1e; border-radius: 16px; padding: 16px; margin-bottom: 14px; border: 1px solid #2c2c2e; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #2c2c2e; padding-bottom: 6px; }
+        .ref-nome { font-size: 1rem; font-weight: 700; text-transform: uppercase; color: #fff; }
+        .ref-hora { font-size: 0.9rem; font-weight: 600; color: #30d158; background-color: rgba(48,209,88,0.1); padding: 2px 8px; border-radius: 6px; }
+        .ref-alimentos { font-size: 1.05rem; color: #e5e5ea; line-height: 1.5; white-space: pre-line; }
+        
+        /* Lista de Compras Checklist */
+        .item-compra { display: flex; align-items: center; gap: 12px; background-color: #1c1c1e; padding: 14px; border-radius: 12px; margin-bottom: 8px; }
+        .item-compra input { width: 20px; height: 20px; accent-color: #30d158; }
+        .item-txt { font-size: 1.05rem; color: #fff; }
+        
+        /* Tab Bar Inferior iOS */
+        nav { position: fixed; bottom: 0; width: 100%; background-color: #1c1c1e; border-top: 1px solid #2c2c2e; display: flex; justify-content: space-around; padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px)); }
+        .nav-item { background: none; border: none; color: #8e8e93; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-item.active { color: #30d158; }
+        .nav-item span { font-size: 1.3rem; }
+    </style>
+</head>
+<body>
 
-export default async function handler(req, res) {
-    // Habilita CORS para você testar de qualquer lugar se necessário
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    <header>
+        <h1 id="dia-titulo">Carregando...</h1>
+        <span id="data-atual"></span>
+    </header>
 
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+    <!-- ABA 1: DIETA DO DIA -->
+    <main id="aba-dieta" class="conteudo active">
+        <div id="lista-refeicoes-hoje"></div>
+    </main>
 
-    // Nome do arquivo que será salvo no Storage da Vercel
-    const BLOB_URL = "https://suabucket.blob.vercel-storage.com/nutridieta.json"; 
-    // Nota: O Vercel Blob gera uma URL própria única quando você cria o storage no painel da Vercel.
+    <!-- ABA 2: LISTA DE COMPRAS DA SEMANA -->
+    <main id="aba-compras" class="conteudo">
+        <h2 style="font-size: 1.3rem; margin-bottom: 15px;">Consolidado da Semana</h2>
+        <div id="lista-compras-semanal"></div>
+    </main>
 
-    try {
-        if (req.method === 'GET') {
-            // Busca o JSON atualizado no Storage
+    <nav>
+        <button class="nav-item active" onclick="alternarAba('dieta', this)"><span>🍽️</span>Dieta de Hoje</button>
+        <button class="nav-item" onclick="alternarAba('compras', this)"><span>🛒</span>Lista da Semana</button>
+    </nav>
+
+    <script>
+        const API_URL = '/api/nutriapi';
+        const DIAS_MAPA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+        const DIAS_LABELS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+        
+        let dadosDietaGlobal = null;
+
+        function alternarAba(aba, btn) {
+            document.querySelectorAll('.conteudo').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(`aba-${aba}`).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        async function carregarDietaDoDia() {
+            const hojeIndex = new Date().getDay(); 
+            const chaveDia = DIAS_MAPA[hojeIndex];
+            
+            document.getElementById('dia-titulo').innerText = DIAS_LABELS[hojeIndex];
+            document.getElementById('data-atual').innerText = new Date().toLocaleDateString('pt-BR');
+
             try {
-                const dados = await fetch(BLOB_URL).then(r => r.json());
-                return res.status(200).json(dados);
-            } catch {
-                // Se o arquivo ainda não existir, entrega uma estrutura padrão vazia
-                return res.status(200).json({ segunda:[], terca:[], quarta:[], quinta:[], sexta:[], sabado:[], domingo:[] });
+                const resposta = await fetch(API_URL);
+                dadosDietaGlobal = await resposta.json();
+                
+                const refeicoesHoje = dadosDietaGlobal[chaveDia] || [];
+                // Ordena por horário antes de exibir
+                refeicoesHoje.sort((a,b) => a.hora.localeCompare(b.hora));
+
+                const container = document.getElementById('lista-refeicoes-hoje');
+                container.innerHTML = "";
+
+                if(refeicoesHoje.length === 0) {
+                    container.innerHTML = `<p style="color:#8e8e93; text-align:center; margin-top:40px;">Nenhuma refeição cadastrada para hoje.</p>`;
+                    return;
+                }
+
+                refeicoesHoje.forEach(ref => {
+                    container.innerHTML += `
+                        <div class="card-refeicao">
+                            <div class="card-header">
+                                <span class="ref-nome">${ref.nome}</span>
+                                <span class="ref-hora">${ref.hora}</span>
+                            </div>
+                            <div class="ref-alimentos">${ref.alimentos}</div>
+                        </div>`;
+                });
+
+                gerarListaComprasSemanal();
+
+            } catch (e) {
+                document.getElementById('dia-titulo').innerText = "Erro ao carregar";
             }
         }
 
-        if (req.method === 'POST') {
-            const novosDados = req.body;
-            // Salva o JSON diretamente no Vercel Blob (sobrescrevendo o antigo)
-            const { url } = await put('nutridieta.json', JSON.stringify(novosDados), {
-                access: 'public',
-                addRandomSuffix: false // Mantém o nome limpo fixo
+        function gerarListaComprasSemanal() {
+            if(!dadosDietaGlobal) return;
+            const container = document.getElementById('lista-compras-semanal');
+            container.innerHTML = "";
+
+            // Varre toda a estrutura para extrair insumos da semana
+            const todosAlimentos = [];
+            DIAS_MAPA.forEach(dia => {
+                (dadosDietaGlobal[dia] || []).forEach(ref => {
+                    // Divide as linhas de alimento para gerar sub-itens limpos na lista de compras
+                    ref.alimentos.split('\n').forEach(linha => {
+                        if(linha.trim()) todosAlimentos.push(linha.trim());
+                    });
+                });
             });
-            return res.status(200).json({ sucesso: true, url });
+
+            // Remove duplicados exatos para não poluir a lista de mercado
+            const listaUnica = [...new Set(todosAlimentos)];
+
+            if(listaUnica.length === 0) {
+                container.innerHTML = `<p style="color:#8e8e93;">Nenhum alimento programado na semana.</p>`;
+                return;
+            }
+
+            listaUnica.forEach((item, index) => {
+                container.innerHTML += `
+                    <div class="item-compra">
+                        <input type="checkbox" id="check-${index}">
+                        <label class="item-txt" for="check-${index}">${item}</label>
+                    </div>`;
+            });
         }
-    } catch (erro) {
-        return res.status(500).json({ error: erro.message });
-    }
-}
+
+        // Executa ao abrir
+        carregarDietaDoDia();
+    </script>
+</body>
+</html>
