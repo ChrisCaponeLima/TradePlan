@@ -89,15 +89,14 @@
             try {
                 const res = await fetch(API_URL);
                 if (res.ok) {
-                    const dados v = await res.json();
-                    // Garante que a estrutura básica exista mesmo se o banco voltar vazio
-                    if (dadosv && typeof dadosv === 'object') {
-                        databaseCompleta = { ...databaseCompleta, ...dadosv };
+                    const dados = await res.json();
+                    if (dados && typeof dados === 'object') {
+                        databaseCompleta = { ...databaseCompleta, ...dados };
                     }
                 }
                 carregarRefeicoesDoDiaSelecionado();
             } catch (e) {
-                console.log("A API ainda não possui dados guardados, iniciando localmente.");
+                console.log("Sem dados na nuvem ainda. Usando estrutura local em branco.");
                 carregarRefeicoesDoDiaSelecionado();
             }
         }
@@ -145,7 +144,6 @@
 
             databaseCompleta[dia].push({ hora, nome, alimentos });
             
-            // Limpa os campos de texto para a próxima digitação
             document.getElementById('ref-nome').value = "";
             document.getElementById('ref-alimentos').value = "";
             
@@ -193,7 +191,6 @@
             }
         }
 
-        // Inicializa ao carregar a página
         window.onload = function() {
             puxarDadosIniciais();
         };
