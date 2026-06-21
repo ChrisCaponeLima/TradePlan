@@ -1,1 +1,216 @@
-<!-- dispensa.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Minha Dispensa</title>
+    
+    <!-- Configurações Premium PWA para iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Dispensa">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3081/3081971.png">
+    
+    <!-- Web Manifest Inline para Vercel -->
+    <link rel="manifest" href="data:application/json,{%22name%22:%22Minha%20Dispensa%20Inteligente%22,%22short_name%22:%22Dispensa%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#121212%22,%22theme_color%22:%22#121212%22}">
+    
+    <link rel="stylesheet" href="styledispensa.css">
+</head>
+<body>
+
+    <header>
+        <h1 id="header-titulo">Dashboard</h1>
+    </header>
+
+    <main id="app-content">
+        
+        <!-- ABA 1: DASHBOARD / ALERTAS -->
+        <section id="tab-painel" class="tab-content active">
+            <h2>Consumo Diário & Alertas</h2>
+            <div id="container-auto-consumo" class="lista-alertas-auto">
+                <!-- Injetado dinamicamente: Consumos automáticos (Gata + Dieta Direta) -->
+            </div>
+            
+            <h3>Alertas de Estoque Baixo</h3>
+            <div id="lista-alertas-minimos" class="lista-itens"></div>
+        </section>
+
+        <!-- ABA 2: ESTOQUE / DISPENSA -->
+        <section id="tab-estoque" class="tab-content">
+            <div class="row-botoes">
+                <button class="btn-primary" onclick="abrirModalItem()">+ Novo Item</button>
+            </div>
+            <div class="filtros-container">
+                <select id="filtro-local" onchange="listarEstoque()"><option value="">Todos os Locais</option></select>
+                <select id="filtro-categoria" onchange="listarEstoque()"><option value="">Todas as Categorias</option></select>
+            </div>
+            <div id="lista-estoque" class="lista-itens"></div>
+        </section>
+
+        <!-- ABA 3: RECEITAS -->
+        <section id="tab-receitas" class="tab-content">
+            <div class="row-botoes">
+                <button class="btn-primary" onclick="abrirModalReceita()">+ Nova Receita</button>
+            </div>
+            <div id="lista-receitas" class="lista-itens"></div>
+        </section>
+
+        <!-- ABA 4: DIETA SEMANAL -->
+        <section id="tab-dieta" class="tab-content">
+            <h2>Grade Semanal (Opção B)</h2>
+            <div id="grade-dieta" class="grade-dieta-container">
+                <!-- Injetado dinamicamente: Segunda a Domingo -->
+            </div>
+        </section>
+
+        <!-- ABA 5: LISTA DE COMPRAS PREDITIVA -->
+        <section id="tab-compras" class="tab-content">
+            <h2>Planejamento de Abastecimento</h2>
+            <div class="card-config input-group-compras">
+                <label for="dias-previsao">Planejar compras para os próximos:</label>
+                <div class="flex-row">
+                    <input type="number" id="dias-previsao" value="7" min="1" onchange="gerarListaCompras()">
+                    <span>Dias</span>
+                </div>
+            </div>
+            <div class="row-botoes" id="row-finalizar-compra" style="display:none;">
+                <button class="btn-success" onclick="finalizarCompra()">Concluir Compra (Abastecer Estoque)</button>
+            </div>
+            <div id="lista-compras" class="lista-itens"></div>
+        </section>
+
+        <!-- ABA 6: AJUSTES -->
+        <section id="tab-config" class="tab-content">
+            <h2>Configurações do Sistema</h2>
+            <div class="card-config">
+                <h3>Locais de Armazenamento</h3>
+                <div class="input-group">
+                    <input type="text" id="novo-local" placeholder="Ex: Geladeira, Armário da Pia">
+                    <button class="btn-primary" onclick="salvarLocal()">+</button>
+                </div>
+                <ul id="lista-locais" class="list-badges"></ul>
+            </div>
+            <div class="card-config">
+                <h3>Categorias</h3>
+                <div class="input-group">
+                    <input type="text" id="nova-categoria" placeholder="Ex: Pet, Insumo, Japonesa">
+                    <button class="btn-primary" onclick="salvarCategoria()">+</button>
+                </div>
+                <ul id="lista-categorias" class="list-badges"></ul>
+            </div>
+            <div class="card-config">
+                <h3>Dados do Aplicativo</h3>
+                <button class="btn-secondary btn-full" onclick="exportarBackup()">Exportar Backup (JSON)</button>
+                <button class="btn-secondary btn-full" style="margin-top: 10px;" onclick="document.getElementById('import-file').click()">Importar Backup</button>
+                <input type="file" id="import-file" style="display:none" onchange="importarBackup(event)">
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL: ITEM DA DISPENSA -->
+    <div id="modal-item" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-item-titulo">Novo Item</h3>
+            <input type="hidden" id="item-id">
+            <label>Nome do Produto</label>
+            <input type="text" id="item-nome" placeholder="Ex: Ração Molhada, Arroz, Whey">
+            <div class="form-row">
+                <div>
+                    <label>Qtd Atual</label>
+                    <input type="number" id="item-qtd" step="0.01">
+                </div>
+                <div>
+                    <label>Unidade</label>
+                    <select id="item-unidade">
+                        <option value="g">Gramas (g)</option>
+                        <option value="ml">Mililitros (ml)</option>
+                        <option value="un">Unidades (un)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Local</label>
+                    <select id="item-local"></select>
+                </div>
+                <div>
+                    <label>Categoria</label>
+                    <select id="item-categoria"></select>
+                </div>
+            </div>
+            <label>Alerta Mínimo de Estoque</label>
+            <input type="number" id="item-minimo" step="0.01" value="0">
+            <div class="checkbox-group">
+                <input type="checkbox" id="item-auto-consumo" onchange="toggleFormConsumo()">
+                <label for="item-auto-consumo">Consumo diário automático fixo?</label>
+            </div>
+            <div id="form-auto-consumo-dados" style="display:none;">
+                <label>Quantidade g/ml/un gasta por dia</label>
+                <input type="number" id="item-gasto-diario" step="0.01" placeholder="Ex: 28.33">
+                <label>Próxima Compra/Entrega Programada</label>
+                <input type="date" id="item-data-compra">
+            </div>
+            <div class="modal-botoes">
+                <button class="btn-secondary" onclick="fecharModalItem()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarItem()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: RECEITAS -->
+    <div id="modal-receita" class="modal">
+        <div class="modal-content">
+            <h3>Nova Receita</h3>
+            <input type="hidden" id="receita-id">
+            <label>Nome da Receita</label>
+            <input type="text" id="receita-nome" placeholder="Ex: Panqueca Fit, Frango com Arroz">
+            <label>Ingredientes</label>
+            <div id="ingredientes-dinamicos"></div>
+            <button class="btn-secondary" style="font-size:0.85rem; padding:6px;" onclick="adicionarLinhaIngrediente()">+ Adicionar Ingrediente</button>
+            <div class="modal-botoes">
+                <button class="btn-secondary" onclick="fecharModalReceita()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarReceita()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: VINCULAR RECEITA À DIETA -->
+    <div id="modal-vinculo-dieta" class="modal">
+        <div class="modal-content">
+            <h3>Adicionar à Dieta</h3>
+            <input type="hidden" id="vinculo-dia">
+            <input type="hidden" id="vinculo-refeicao">
+            <label>Selecione a Receita / Alimento</label>
+            <select id="vinculo-receita-select"></select>
+            <div class="modal-botoes">
+                <button class="btn-secondary" onclick="fecharModalVinculo()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarVinculoDieta()">Vincular</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de Navegação Inferior Estilo iOS Touch Bar -->
+    <nav class="nav-bottom">
+        <button class="nav-item active" onclick="mudarAba('painel', this)">
+            <span class="icon">📊</span><span class="label">Painel</span>
+        </button>
+        <button class="nav-item" onclick="mudarAba('estoque', this)">
+            <span class="icon">📦</span><span class="label">Dispensa</span>
+        </button>
+        <button class="nav-item" onclick="mudarAba('receitas', this)">
+            <span class="icon">🍳</span><span class="label">Receitas</span>
+        </button>
+        <button class="nav-item" onclick="mudarAba('dieta', this)">
+            <span class="icon">📆</span><span class="label">Dieta</span>
+        </button>
+        <button class="nav-item" onclick="mudarAba('compras', this)">
+            <span class="icon">🛒</span><span class="label">Compras</span>
+        </button>
+        <button class="nav-item" onclick="mudarAba('config', this)">
+            <span class="icon">⚙️</span><span class="label">Ajustes</span>
+        </button>
+    </nav>
+
+    <script src="appdispensa.js"></script>
+</body>
+</html>
