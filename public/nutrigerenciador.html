@@ -2,152 +2,177 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Minha Dieta Diária</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Nutricional - Admin</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #000000; color: #ffffff; padding-bottom: 80px; }
-        header { background-color: #1c1c1e; padding: 20px 15px; text-align: center; border-bottom: 1px solid #2c2c2e; position: fixed; top: 0; width: 100%; z-index: 10; }
-        header h1 { font-size: 1.2rem; font-weight: 700; color: #30d158; }
-        header span { font-size: 0.85rem; color: #8e8e93; display: block; margin-top: 2px; }
-        .conteudo { padding: 20px; margin-top: 70px; display: none; }
-        .conteudo.active { display: block; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #121212; color: #ffffff; padding: 20px; }
+        h1 { font-size: 1.4rem; margin-bottom: 20px; color: #30d158; text-align: center; }
         
-        /* Cards de Refeição Premium */
-        .card-refeicao { background-color: #1c1c1e; border-radius: 16px; padding: 16px; margin-bottom: 14px; border: 1px solid #2c2c2e; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #2c2c2e; padding-bottom: 6px; }
-        .ref-nome { font-size: 1rem; font-weight: 700; text-transform: uppercase; color: #fff; }
-        .ref-hora { font-size: 0.9rem; font-weight: 600; color: #30d158; background-color: rgba(48,209,88,0.1); padding: 2px 8px; border-radius: 6px; }
-        .ref-alimentos { font-size: 1.05rem; color: #e5e5ea; line-height: 1.5; white-space: pre-line; }
+        select, input, textarea { background-color: #1c1c1e; border: 1px solid #2c2c2e; color: #fff; padding: 12px; border-radius: 8px; font-size: 1rem; width: 100%; margin-bottom: 12px; }
+        label { font-size: 0.85rem; color: #aeaeb2; display: block; margin-bottom: 4px; font-weight: 600; }
         
-        /* Lista de Compras Checklist */
-        .item-compra { display: flex; align-items: center; gap: 12px; background-color: #1c1c1e; padding: 14px; border-radius: 12px; margin-bottom: 8px; }
-        .item-compra input { width: 20px; height: 20px; accent-color: #30d158; }
-        .item-txt { font-size: 1.05rem; color: #fff; }
+        button { background-color: #0a84ff; color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; }
+        button.btn-sucesso { background-color: #30d158; color: #000; }
+        button.btn-secundario { background-color: #2c2c2e; color: #fff; }
         
-        /* Tab Bar Inferior iOS */
-        nav { position: fixed; bottom: 0; width: 100%; background-color: #1c1c1e; border-top: 1px solid #2c2c2e; display: flex; justify-content: space-around; padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px)); }
-        .nav-item { background: none; border: none; color: #8e8e93; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .nav-item.active { color: #30d158; }
-        .nav-item span { font-size: 1.3rem; }
+        .box { background-color: #1c1c1e; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #2c2c2e; }
+        .row { display: flex; gap: 10px; }
+        .item-lista-ref { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #2c2c2e; border-radius: 6px; margin-bottom: 6px; font-size: 0.9rem; }
+        
+        .checkbox-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
+        .check-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+        .check-item input { width: auto; margin-bottom: 0; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1 id="dia-titulo">Carregando...</h1>
-        <span id="data-atual"></span>
-    </header>
+    <h1>Gerenciador de Dietas</h1>
 
-    <!-- ABA 1: DIETA DO DIA -->
-    <main id="aba-dieta" class="conteudo active">
-        <div id="lista-refeicoes-hoje"></div>
-    </main>
+    <label>1. Selecione o Dia para Trabalhar</label>
+    <select id="select-dia" onchange="carregarRefeicoesDoDiaSelecionado()">
+        <option value="segunda">Segunda-feira</option>
+        <option value="terca">Terça-feira</option>
+        <option value="quarta">Quarta-feira</option>
+        <option value="quinta">Quinta-feira</option>
+        <option value="sexta">Sexta-feira</option>
+        <option value="sabado">Sábado</option>
+        <option value="domingo">Domingo</option>
+    </select>
 
-    <!-- ABA 2: LISTA DE COMPRAS DA SEMANA -->
-    <main id="aba-compras" class="conteudo">
-        <h2 style="font-size: 1.3rem; margin-bottom: 15px;">Consolidado da Semana</h2>
-        <div id="lista-compras-semanal"></div>
-    </main>
+    <!-- Form de Nova Refeição -->
+    <div class="box">
+        <h3 style="margin-bottom:10px; font-size:1rem;">+ Adicionar/Editar Refeição</h3>
+        <div class="row">
+            <div>
+                <label>Horário</label>
+                <input type="time" id="ref-hora" value="08:00">
+            </div>
+            <div style="flex:1;">
+                <label>Nome da Refeição</label>
+                <input type="text" id="ref-nome" placeholder="Ex: Café da Manhã, Ceia">
+            </div>
+        </div>
+        <label>Alimentos (Um por linha)</label>
+        <textarea id="ref-alimentos" rows="4" placeholder="Ex: 3 Ovos mexidos&#10;1 Banana"></textarea>
+        <button onclick="adicionarRefeicao()">Inserir no Dia</button>
+    </div>
 
-    <nav>
-        <button class="nav-item active" onclick="alternarAba('dieta', this)"><span>🍽️</span>Dieta de Hoje</button>
-        <button class="nav-item" onclick="alternarAba('compras', this)"><span>🛒</span>Lista da Semana</button>
-    </nav>
+    <!-- Lista do Dia Atual -->
+    <div class="box">
+        <h3 style="margin-bottom:10px; font-size:1rem;">Refeições de Hoje na Tela</h3>
+        <div id="lista-refeicoes-dia"></div>
+    </div>
+
+    <!-- Replicação em Lote -->
+    <div class="box">
+        <h3 style="margin-bottom:4px; font-size:1rem;">👯 Replicar Estrutura Deste Dia</h3>
+        <p style="font-size:0.75rem; color:#8e8e93; margin-bottom:10px;">Copiar todas as refeições da tela para os dias marcados:</p>
+        <div class="checkbox-group">
+            <div class="check-item"><input type="checkbox" value="segunda" class="chk-dia"> Seg</div>
+            <div class="check-item"><input type="checkbox" value="terca" class="chk-dia"> Ter</div>
+            <div class="check-item"><input type="checkbox" value="quarta" class="chk-dia"> Qua</div>
+            <div class="check-item"><input type="checkbox" value="quinta" class="chk-dia"> Qui</div>
+            <div class="check-item"><input type="checkbox" value="sexta" class="chk-dia"> Sex</div>
+            <div class="check-item"><input type="checkbox" value="sabado" class="chk-dia"> Sáb</div>
+            <div class="check-item"><input type="checkbox" value="domingo" class="chk-dia"> Dom</div>
+        </div>
+        <button class="btn-secundario" onclick="replicarEntreDias()">Replicar em Lote</button>
+    </div>
+
+    <button class="btn-sucesso" style="font-size:1.1rem; padding:16px;" onclick="salvarNaNuvem()">☁️ SALVAR DIETA ONLINE</button>
 
     <script>
         const API_URL = '/api/nutriapi';
-        const DIAS_MAPA = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
-        const DIAS_LABELS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-        
-        let dadosDietaGlobal = null;
+        let databaseCompleta = { segunda:[], terca:[], quarta:[], quinta:[], sexta:[], sabado:[], domingo:[] };
 
-        function alternarAba(aba, btn) {
-            document.querySelectorAll('.conteudo').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(`aba-${aba}`).classList.add('active');
-            btn.classList.add('active');
-        }
-
-        async function carregarDietaDoDia() {
-            const hojeIndex = new Date().getDay(); 
-            const chaveDia = DIAS_MAPA[hojeIndex];
-            
-            document.getElementById('dia-titulo').innerText = DIAS_LABELS[hojeIndex];
-            document.getElementById('data-atual').innerText = new Date().toLocaleDateString('pt-BR');
-
+        async function puxarDadosIniciais() {
             try {
-                const resposta = await fetch(API_URL);
-                dadosDietaGlobal = await resposta.json();
-                
-                const refeicoesHoje = dadosDietaGlobal[chaveDia] || [];
-                // Ordena por horário antes de exibir
-                refeicoesHoje.sort((a,b) => a.hora.localeCompare(b.hora));
-
-                const container = document.getElementById('lista-refeicoes-hoje');
-                container.innerHTML = "";
-
-                if(refeicoesHoje.length === 0) {
-                    container.innerHTML = `<p style="color:#8e8e93; text-align:center; margin-top:40px;">Nenhuma refeição cadastrada para hoje.</p>`;
-                    return;
-                }
-
-                refeicoesHoje.forEach(ref => {
-                    container.innerHTML += `
-                        <div class="card-refeicao">
-                            <div class="card-header">
-                                <span class="ref-nome">${ref.nome}</span>
-                                <span class="ref-hora">${ref.hora}</span>
-                            </div>
-                            <div class="ref-alimentos">${ref.alimentos}</div>
-                        </div>`;
-                });
-
-                gerarListaComprasSemanal();
-
+                const res = await fetch(API_URL);
+                databaseCompleta = await res.json();
+                carregarRefeicoesDoDiaSelecionado();
             } catch (e) {
-                document.getElementById('dia-titulo').innerText = "Erro ao carregar";
+                alert("Erro ao conectar com a API da Vercel.");
             }
         }
 
-        function gerarListaComprasSemanal() {
-            if(!dadosDietaGlobal) return;
-            const container = document.getElementById('lista-compras-semanal');
+        function carregarRefeicoesDoDiaSelecionado() {
+            const dia = document.getElementById('select-dia').value;
+            const container = document.getElementById('lista-refeicoes-dia');
             container.innerHTML = "";
 
-            // Varre toda a estrutura para extrair insumos da semana
-            const todosAlimentos = [];
-            DIAS_MAPA.forEach(dia => {
-                (dadosDietaGlobal[dia] || []).forEach(ref => {
-                    // Divide as linhas de alimento para gerar sub-itens limpos na lista de compras
-                    ref.alimentos.split('\n').forEach(linha => {
-                        if(linha.trim()) todosAlimentos.push(linha.trim());
-                    });
-                });
-            });
+            const lista = databaseCompleta[dia] || [];
+            lista.sort((a,b) => a.hora.localeCompare(b.hora));
 
-            // Remove duplicados exatos para não poluir a lista de mercado
-            const listaUnica = [...new Set(todosAlimentos)];
-
-            if(listaUnica.length === 0) {
-                container.innerHTML = `<p style="color:#8e8e93;">Nenhum alimento programado na semana.</p>`;
+            if(lista.length === 0) {
+                container.innerHTML = `<p style="color:#8e8e93; font-size:0.85rem;">Nenhuma refeição neste dia.</p>`;
                 return;
             }
 
-            listaUnica.forEach((item, index) => {
+            lista.forEach((ref, index) => {
                 container.innerHTML += `
-                    <div class="item-compra">
-                        <input type="checkbox" id="check-${index}">
-                        <label class="item-txt" for="check-${index}">${item}</label>
+                    <div class="item-lista-ref">
+                        <div><b>${ref.hora}</b> - ${ref.nome}</div>
+                        <button class="btn-danger-xs" style="width:auto; padding:4px 8px; margin-bottom:0;" onclick="removerRefeicao(${index})">✕</button>
                     </div>`;
             });
         }
 
-        // Executa ao abrir
-        carregarDietaDoDia();
+        function adicionarRefeicao() {
+            const dia = document.getElementById('select-dia').value;
+            const hora = document.getElementById('ref-hora').value;
+            const nome = document.getElementById('ref-nome').value.trim();
+            const alimentos = document.getElementById('ref-alimentos').value.trim();
+
+            if(!nome || !alimentos) { alert("Preencha o nome e os alimentos!"); return; }
+
+            databaseCompleta[dia].push({ hora, nome, alimentos });
+            
+            // Limpa campos
+            document.getElementById('ref-nome').value = "";
+            document.getElementById('ref-alimentos').value = "";
+            
+            carregarRefeicoesDoDiaSelecionado();
+        }
+
+        function removerRefeicao(index) {
+            const dia = document.getElementById('select-dia').value;
+            databaseCompleta[dia].splice(index, 1);
+            carregarRefeicoesDoDiaSelecionado();
+        }
+
+        function replicarEntreDias() {
+            const diaOrigem = document.getElementById('select-dia').value;
+            const checkboxes = document.querySelectorAll('.chk-dia:checked');
+            
+            if(checkboxes.length === 0) { alert("Marque pelo menos um dia para receber a cópia."); return; }
+
+            checkboxes.forEach(cb => {
+                const diaDestino = cb.value;
+                // Deep clone da estrutura de refeições para evitar referências cruzadas
+                databaseCompleta[diaDestino] = JSON.parse(JSON.stringify(databaseCompleta[diaOrigem]));
+            });
+
+            alert(`Estrutura de ${diaOrigem} copiada com sucesso para os dias selecionados!`);
+            // Desmarca todos
+            checkboxes.forEach(cb => cb.checked = false);
+        }
+
+        async function salvarNaNuvem() {
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(databaseCompleta)
+                });
+                if(res.ok) alert("🎉 Dieta atualizada e publicada na Nuvem com sucesso!");
+            } catch (e) {
+                alert("Erro ao salvar dados.");
+            }
+        }
+
+        // Inicializa
+        puxarDadosIniciais();
     </script>
 </body>
 </html>
